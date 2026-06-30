@@ -2,6 +2,8 @@
 
 Hier ist deine erweiterte Liste mit 90 essenziellen Befehlen, aufgeteilt in Kategorien.
 Perfekt für alle, die vom Intermediate zum Senior-Level aufsteigen wollen.
+
+
 📁 1. Navigation & Dateiverwaltung (10)
 Befehl	Beschreibung
 ls	Verzeichnisinhalt anzeigen
@@ -14,6 +16,8 @@ mkdir	Neues Verzeichnis erstellen
 touch	Leere Datei anlegen oder Zeitstempel aktualisieren
 ln	Hard- oder Softlinks erstellen
 file	Dateityp erkennen
+
+
 📄 2. Dateibetrachtung & -bearbeitung (8)
 Befehl	Beschreibung
 cat	Dateiinhalt ausgeben
@@ -24,6 +28,8 @@ nano	Einfacher Texteditor
 vim	Leistungsstarker Editor (oder vi)
 diff	Unterschiede zwischen Dateien anzeigen
 patch	Patches auf Dateien anwenden
+
+
 🔐 3. Rechte & Eigentum (6)
 Befehl	Beschreibung
 chmod	Dateirechte ändern (rwx)
@@ -32,6 +38,8 @@ chgrp	Gruppe ändern
 umask	Standardrechte für neue Dateien setzen
 getfacl	Erweiterte Zugriffslisten (ACLs) anzeigen
 setfacl	Erweiterte Zugriffslisten setzen
+
+
 ⚙️ 4. Prozessverwaltung (10)
 Befehl	Beschreibung
 ps	Prozessliste anzeigen (mit aux oder ef)
@@ -44,6 +52,8 @@ nice	Prozess mit angepasster Priorität starten
 renice	Priorität eines laufenden Prozesses ändern
 nohup	Prozess gegen HUP-Signal schützen (z.B. nach Logout)
 bg/fg/jobs	Hintergrund-/Vordergrundprozesse verwalten (Shell-Builtins)
+
+
 🖥️ 5. Systeminformationen (10)
 Befehl	Beschreibung
 uname	Systeminformationen (Kernel, Architektur)
@@ -56,6 +66,8 @@ last	Letzte Anmeldungen anzeigen
 lscpu	CPU-Informationen
 lspci	PCI-Geräte (Grafikkarte, Netzwerk etc.)
 lsusb	USB-Geräte anzeigen
+
+
 📦 6. Paketverwaltung (7)
 Befehl	Beschreibung
 apt	Hauptwerkzeug für Paketverwaltung (Ubuntu/Debian)
@@ -65,6 +77,8 @@ apt-get	Klassisches APT-Tool (wird meist durch apt ersetzt)
 add-apt-repository	PPA hinzufügen
 snap	Snap-Pakete verwalten (falls genutzt)
 flatpak	Flatpak-Pakete verwalten (falls genutzt)
+
+
 🌐 7. Netzwerk (18)
 Befehl	Beschreibung
 ping	Erreichbarkeit und Latenz prüfen
@@ -85,6 +99,8 @@ ssh-keygen	SSH-Schlüsselpaare erzeugen
 nmap	Netzwerk-Scan (Ports, Betriebssysteme) – optional installieren
 tcpdump	Netzwerkpakete mitschneiden (analysieren)
 iptables/nftables	Firewall-Regeln setzen (Kernel-Firewall)
+
+
 ✂️ 8. Textverarbeitung & Filter (10)
 Befehl	Beschreibung
 grep	Muster in Dateien oder Ausgaben suchen (mit Regex)
@@ -97,6 +113,8 @@ wc	Zeilen-, Wort- und Zeichenzählung
 tr	Zeichen ersetzen oder löschen
 fold	Zeilen umbrechen (z.B. für Textformatierung)
 paste	Zeilen aus mehreren Dateien zusammenfügen
+
+
 📝 9. Shell & Skripting (Konzepte + Builtins) (10)
 Befehl/Konzept	Beschreibung
 bash	Die Shell selbst (Skripte ausführen)
@@ -109,6 +127,8 @@ source (oder .)	Skript in aktueller Shell ausführen (z.B. für Umgebungsvariabl
 which	Pfad eines Befehls anzeigen
 type	Typ eines Befehls (alias, builtin, external)
 command	Builtin überspringen, externen Befehl ausführen
+
+
 🔄 10. Logische Operatoren & Schleifen (Shell-Konstrukte)
 
 (keine separaten Befehle, aber essenziell für Skripting)
@@ -123,6 +143,8 @@ until	Schleife bis Bedingung erfüllt
 if/elif/else	Bedingte Verzweigung
 case	Fallunterscheidung (wie switch)
 function	Eigene Funktionen definieren
+
+
 🛠️ 11. Systemadministration & Dienste (8)
 Befehl	Beschreibung
 systemctl	Systemd-Dienste verwalten (start, stop, enable, status)
@@ -133,6 +155,8 @@ fdisk	Partitionstabelle bearbeiten
 mkfs	Dateisystem erstellen (z.B. mkfs.ext4)
 mount/umount	Dateisysteme einhängen / aushängen
 blkid	UUID und Dateisystem-Typ von Blockgeräten anzeigen
+
+
 🔒 12. Sicherheit (6)
 Befehl	Beschreibung
 sudo	Befehle mit erweiterten Rechten ausführen
@@ -141,6 +165,8 @@ passwd	Passwort ändern
 chage	Passwort-Alterung verwalten
 openssl	Verschlüsselung, Zertifikate, Hashes
 gpg	Verschlüsselung und Signatur (GNU Privacy Guard)
+
+
 📊 13. Leistung & Überwachung (8)
 Befehl	Beschreibung
 df	Freier Speicherplatz auf Dateisystemen
@@ -151,10 +177,12 @@ iostat	CPU- und Festplatten-I/O-Statistiken
 sar	Systemaktivitätsbericht (aus sysstat-Paket)
 lsof	Offene Dateien und die dazugehörigen Prozesse
 strace	Systemaufrufe eines Prozesses verfolgen (Debugging)
+
+
 📦 14. Sonstige Nützliche (4)
 Befehl	Beschreibung
 find	Dateien und Verzeichnisse suchen (mit vielen Kriterien)
 xargs	Argumente aus Standardeingabe an andere Befehle übergeben
 tee	Ausgabe gleichzeitig in Datei und auf Terminal schreiben
 screen/tmux	Terminal-Multiplexer (Sitzungen erhalten)
-✅ Zusammenfassung: 90 Befehle erreicht
+
