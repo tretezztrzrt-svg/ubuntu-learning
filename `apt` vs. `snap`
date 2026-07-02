@@ -1,0 +1,28 @@
+# Create the content for the Markdown file
+md_content = """# Ubuntu Snap Cheat Sheet
+
+Ein kompakter Spickzettel für den Wechsel von `apt` zu `snap` unter Ubuntu sowie nützliche Befehle zur Verwaltung von Speicherplatz, Versionen und Diensten.
+
+---
+
+## 1. Der direkte Vergleich: `apt` vs. `snap`
+
+| Aktion | Klassisch (`apt`) | Modern (`snap`) |
+| :--- | :--- | :--- |
+| **Paket suchen** | `apt search <name>` | `snap find <name>` |
+| **App installieren** | `sudo apt install <name>` | `sudo snap install <name>` |
+| **App entfernen** | `sudo apt remove <name>` | `sudo snap remove <name>` |
+| **Updates installieren** | `sudo apt update && sudo apt upgrade` | `sudo snap refresh` |
+| **Installierte Apps auflisten** | `apt list --installed` | `snap list` |
+| **Informationen anzeigen** | `apt show <name>` | `snap info <name>` |
+
+---
+
+## 2. Fortgeschrittene Snap-Befehle
+
+Snaps bieten durch ihre Container-Struktur Funktionen, die es bei `apt` so nicht gibt:
+
+### Versionen verwalten & Fehlerbehebung
+* **Einzelne App aktualisieren:**
+  ```bash
+  sudo snap refresh <app-name>
