@@ -1,125 +1,965 @@
+#!/bin/bash
+# =============================================================================
+# ~/.bash_functions
+# Bash-Funktionen für tägliche Aufgaben
+# Erstellt von Lumo | Date: 2026-07-02
+# =============================================================================
 
-# --- Functions ----------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# NAVIGATION HILFSFUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Durchsucht Dateien rekursiv nach einem Suchbegriff
-# Nutzung: search "suchbegriff"
+# Erstellen eines Ordners und sofortiges Wechseln hinein
+function mkcd() {
+    if [ -z "$1" ]; then
+        echo "❌ usage: mkcd <directory_name>"
+        return 1
+    fi
+    mkdir -p "$1" && cd "$1" && echo "✅ Created and entered: $1"
+}
+
+# Navigiere zur vorherigen Verzeichnisposition
+function back() {
+    cd - > /dev/null && pwd
+}
+
+# Gehe zum Home-Verzeichnis mit Info
+function homedir() {
+    cd ~ && echo "🏠 Home Directory: $PWD"
+}
+
+# Navigiere zu häufig genutzten Pfaden mit Parameter
+function goto() {
+    case "$1" in
+        alex)  cd /home/alex/ ;;
+        vera)  cd /media/veracrypt1/ ;;
+        logs)  cd /var/log/ ;;
+        doc)   cd ~/Documents/ ;;
+        down)  cd ~/Downloads/ ;;
+        etc)   cd /etc/ ;;
+        tmp)   cd /tmp/ ;;
+        root)  cd /root/ ;;
+        dev)   cd ~/Development/ ;;
+        projects) cd ~/projects/ ;;
+        *) echo "❌ Unknown target '$1'. Valid options: alex, vera, logs, doc, down, etc, tmp, root, dev, projects" ;;
+    esac
+}
+
+# Tree-like directory navigation
+function treedir() {
+    local depth="${2:-5}"
+    find "$1" -maxdepth "$depth" -type d | sed 's:[^/]*/:  :g;s:.::;s:^--$:|:'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SUCHFUNKTIONEN
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Rekursive Textsuche in Dateien
 function search() {
     if [ -z "$1" ]; then
-        echo "Verwendung: search <suchbegriff>"
+        echo "usage: search <search_string>"
         return 1
     fi
-    # -r: rekursiv, -o: nur übereinstimmende Teile zeigen
-    # -i: Groß-/Kleinschreibung ignorieren, -I: Binärdateien überspringen
-    egrep -roi "$1" . | sort | uniq
-} # buggy? nochmals
+    egrep -roi "$1" . 2>/dev/null | cut -d: -f2- | sort | uniq -c | sort -rn
+}
 
-
-# Findet Dateien im aktuellen Verzeichnis, die mit dem Suchbegriff beginnen
-# Nutzung: whereis "dateiname"
-# function whereis() {
-#    if [ -z "$1" ]; then
-#        echo "Verwendung: whereis <dateiname>"
-#        return 1
-#   fi
-#    find . -type f -name "$1*"
-#} # buggy
-
-# Erstellt einen Ordner und wechselt sofort hinein
-# alias mkcd='bash -c "mkdir -p \"\$1\" && cd \"\$1\"" _' # Erstellt einen Ordner und wechselt sofort hinein >> functions mkdircd
-# Nutzung: mkdircd "ordnername"
-function mkdircd() {
+# Suche nach Dateien nach Name (flexibel)
+function findfile() {
     if [ -z "$1" ]; then
-        echo "Verwendung: mkcd <ordnername>"
+        echo "usage: findfile <filename_pattern>"
         return 1
     fi
-    mkdir -p "$1" && cd "$1"
-} # ubuntu-proofed
+    find . -type f -iname "*$1*" 2>/dev/null | head -30
+}
 
-# --- Universal entpacken/packen/packenhard ------------------------------------------
-alias packen-tarfix='tar -czvf' # Komprimiert einen Ordner zu .tar.gz
-alias packen-untar='tar -zxvf' # Entpackt eine .tar.gz Datei
-
-# sudo apt install p7zip-full
-
-function entpacken() {
-    if [ $# -ne 1 ]; then
-        echo "Error: No file specified."
+# Suche nach bestimmten Dateitypen
+function search_by_ext() {
+    if [ -z "$1" ]; then
+        echo "usage: search_by_ext <extension> (e.g., 'py', 'txt', 'sh')"
         return 1
     fi
+    find . -type f -name "*.$1" 2>/dev/null | wc -l
+    echo "---"
+    find . -type f -name "*.$1" 2>/dev/null | head -20
+}
 
-    local archiv="$1"
-    if [ ! -f "$archiv" ]; then
-        echo "'$archiv' is not a valid file"
+# Finde große Dateien (> 100MB)
+function findbig() {
+    echo "🔍 Searching for files larger than 100MB..."
+    find . -type f -size +100M -exec du -h {} \; | sort -hr | head -20
+}
+
+# Finde leere Dateien
+function findempty() {
+    find . -type f -empty
+}
+
+# Finde geänderte Dateien (letzte 7 Tage)
+function findchanged() {
+    find . -type f -mtime -7 -exec ls -lt {} \;
+}
+
+# Suche in Inhalten aller Konfigurationsdateien
+function configsearch() {
+    if [ -z "$1" ]; then
+        echo "usage: configsearch <pattern>"
         return 1
     fi
+    find /etc -type f \( -name "*.conf" -o -name "*.cfg" -o -name "*.ini" \) -exec grep -l "$1" {} \;
+}
 
-    case "$archiv" in
-        *.7z|*.7Z)
-            7z x -y "$archiv"
+# Globale Suche mit weniger Spam
+function glsearch() {
+    if [ -z "$1" ]; then
+        echo "usage: glsearch <pattern>"
+        return 1
+    fi
+    grep -rIl --exclude-dir={.git,node_modules,target} "$1" "${2:-.}" 2>/dev/null | head -50
+}
 
+# ─────────────────────────────────────────────────────────────────────────────
+# VERZEICHNISGRÖßE ANALYSE
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Ordnergrößen anzeigen (die buggy Version korrigiert)
+function folder_size() {
+    if [ -z "$1" ]; then
+        echo "📊 Top 10 largest directories in current:"
+        du -sh * 2>/dev/null | sort -hr | head -10
+    else
+        echo "📊 Size of '$1':"
+        du -sh "$1" 2>/dev/null
+    fi
+}
+
+# Detaillierte Ordneranalyse
+function analyze_dirs() {
+    local limit="${2:-50}"
+    echo "=== Largest directories in $1 ==="
+    du -xs "$1"/* 2>/dev/null | sort -nr | head -"$limit" | awk '{$2=$2; print}' | column -t
+}
+
+# Gesamtverbrauch eines Verzeichnisses
+function total_size() {
+    if [ -z "$1" ]; then
+        echo "Total size of current directory:"
+        du -sh .
+    else
+        echo "Size of '$1':"
+        du -sh "$1" 2>/dev/null
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ARCHIVIERUNG & ENTPACKEN
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Universal entpacken (unterstützt mehrere Formate)
+function unpack() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: unpack <archive_file>"
+        echo "Supported formats: .tar.gz, .tgz, .tar.bz2, .tar.xz, .zip, .rar, .7z"
+        return 1
+    fi
+    
+    local file="$1"
+    
+    if [ ! -f "$file" ]; then
+        echo "❌ Error: File '$file' not found"
+        return 1
+    fi
+    
+    case "$file" in
+        *.tar.gz|*.tgz)
+            echo "📦 Extracting .tar.gz ..."
+            tar -xzvf "$file"
+            ;;
+        *.tar.bz2|*.tbz2)
+            echo "📦 Extracting .tar.bz2 ..."
+            tar -xjvf "$file"
+            ;;
+        *.tar.xz|*.txz)
+            echo "📦 Extracting .tar.xz ..."
+            tar -xJvf "$file"
+            ;;
+        *.tar)
+            echo "📦 Extracting .tar ..."
+            tar -xf "$file"
+            ;;
+        *.zip)
+            echo "📦 Extracting .zip ..."
+            unzip -q "$file"
+            ;;
+        *.rar)
+            if command -v unrar &> /dev/null; then
+                echo "📦 Extracting .rar ..."
+                unrar x "$file"
+            else
+                echo "❌ unrar not installed. Run: sudo apt install unrar"
+                return 1
+            fi
+            ;;
+        *.7z)
+            if command -v 7z &> /dev/null; then
+                echo "📦 Extracting .7z ..."
+                7z x -y "$file"
+            else
+                echo "❌ 7z not installed. Run: sudo apt install p7zip-full"
+                return 1
+            fi
             ;;
         *)
-            echo "'$archiv' ist kein .7z Archiv"
+            echo "❌ Unknown archive format: $file"
+            echo "Try installing extra tools for better support."
             return 1
             ;;
     esac
 }
-# hat geklappt?
-# 7z x "$1" # vorher 
 
-function packen() {
+# Archive erstellen (Universal)
+function pack() {
     if [ $# -lt 2 ]; then
-        echo "Verwendung: packen <datei_oder_ordner> [zielname]"
+        echo "Usage: pack <output_archive> <input_file_or_folder>"
+        echo "Formats supported via extension: .tar.gz, .zip, .7z"
         return 1
     fi
-
-    local quelle="$1"
-    local ziel="${2:-$(basename "$quelle").7z}"
-
-    # wenn kein .7z am Ende, dann ergänzen
-    case "$ziel" in
-        *.7z) ;; 
-        *) ziel="${ziel}.7z" ;;
+    
+    local output="$1"
+    shift
+    local input="$@"
+    
+    if [ ! -e "$input" ]; then
+        echo "❌ Error: Input '$input' does not exist"
+        return 1
+    fi
+    
+    if [ -e "$output" ]; then
+        echo "❌ Error: Output '$output' already exists!"
+        return 1
+    fi
+    
+    case "$output" in
+        *.tar.gz|*.tgz)
+            tar -czf "$output" "$input"
+            echo "✅ Created: $output"
+            ;;
+        *.zip)
+            zip -r "$output" "$input"
+            echo "✅ Created: $output"
+            ;;
+        *.7z)
+            if command -v 7z &> /dev/null; then
+                7z a -t7z "$output" "$input"
+                echo "✅ Created: $output"
+            else
+                echo "❌ 7z not installed"
+                return 1
+            fi
+            ;;
+        *)
+            echo "❌ Unknown output format. Supported: .tar.gz, .zip, .7z"
+            return 1
+            ;;
     esac
-    if [ ! -e "$quelle" ]; then
-        echo "Fehler: Quelle existiert nicht: $quelle"
-        return 1
-    fi
-    if [ -e "$ziel" ]; then
-        echo "Fehler: $ziel existiert bereits!"
-        return 1
-    fi
+}
 
-    7z a -t7z "$ziel" "$quelle"
-    # 7z a -t7z -mx=9 "$ziel" "$quelle"
-    # 7z a "$ziel" "$quelle" - war der vorherige vorschlag
-} # hat geklappt
-
-function packen-hard() {
+# Komprimieren mit maximalem Level
+function pack_hardcore() {
     if [ $# -lt 2 ]; then
-        echo "Verwendung: packen <datei_oder_ordner> [zielname]"
+        echo "Usage: pack_hardcore <output.7z> <input>"
         return 1
     fi
+    
+    local output="$1"
+    shift
+    local input="$@"
+    
+    [[ "$output" != *.7z ]] && output="${output}.7z"
+    
+    if [ ! -e "$input" ]; then
+        echo "❌ Source does not exist"
+        return 1
+    fi
+    
+    7z a -t7z -mx=9 -m0=lzma2 -ms=on "$output" "$input"
+    echo "✅ Hardcore compressed: $output"
+}
 
-    local quelle="$1"
-    local ziel="${2:-$(basename "$quelle").7z}"
-
-    # wenn kein .7z am Ende, dann ergänzen
-    case "$ziel" in
-        *.7z) ;; 
-        *) ziel="${ziel}.7z" ;;
+# Archiv Inhalt ansehen ohne Entpacken
+function archive_contents() {
+    if [ $# -ne 1 ]; then
+        echo "Usage: archive_contents <archive_file>"
+        return 1
+    fi
+    
+    case "$1" in
+        *.tar.gz|*.tgz) tar -tzf "$1" ;;
+        *.tar.bz2|*.tbz2) tar -tjf "$1" ;;
+        *.tar.xz|*.txz) tar -tJf "$1" ;;
+        *.zip) unzip -l "$1" ;;
+        *.7z) 7z l "$1" ;;
+        *) echo "Unknown format" ;;
     esac
-    if [ ! -e "$quelle" ]; then
-        echo "Fehler: Quelle existiert nicht: $quelle"
-        return 1
-    fi
-    if [ -e "$ziel" ]; then
-        echo "Fehler: $ziel existiert bereits!"
-        return 1
-    fi
+}
 
-    7z a -t7z -mx=9 "$ziel" "$quelle"
-} # buggy? nochmals
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM MONITORING FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Schneller Systemstatus Overview
+function sysinfo() {
+    echo "=========================================="
+    echo "        🖥️ SYSTEM INFORMATION 🖥️"
+    echo "=========================================="
+    
+    echo -e "\n📅 Date & Uptime:"
+    date "+%Y-%m-%d %H:%M:%S"
+    uptime -p
+    
+    echo -e "\n💻 Hostname & Kernel:"
+    hostname
+    uname -r
+    
+    echo -e "\n👤 Logged Users:"
+    who | wc -l
+    who
+    
+    echo -e "\n📀 Disk Space (/):"
+    df -h / | tail -1 | awk '{print "Used:", $3 "/" $2 " (" $5 ")"}'
+    
+    echo -e "\n🧠 Memory Usage:"
+    free -h | grep Mem | awk '{print "Used:", $3 "/" $2 " (" int($3/$2*100) "%)"}'
+    
+    echo -e "\n🔥 Load Average:"
+    cat /proc/loadavg | awk '{print "1m: "$1", 5m: "$2", 15m: "$3}'
+    
+    echo -e "\n🔋 CPU Temperature (if available):"
+    if command -v sensors &> /dev/null; then
+        sensors | grep -E "Core|Package" | head -5
+    else
+        echo "   (install lm-sensors for temps)"
+    fi
+    
+    echo -e "\n=========================================="
+}
+
+# Memory hungry processes
+function mem_hogs() {
+    echo "=== Top 10 Memory Consumers ==="
+    ps aux --sort=-%mem | awk 'NR<=11 {printf \"%-8s %5s %s\\n\", $3"%", $4"%", $11}' | column -t
+}
+
+# CPU intensive processes
+function cpu_hogs() {
+    echo "=== Top 10 CPU Consumers ==="
+    ps aux --sort=-%cpu | awk 'NR<=11 {printf \"%-8s %8s %s\\n\", $3"%", $2, $11}' | column -t
+}
+
+# Network connections summary
+function conn_summary() {
+    echo "=== Active Connections ==="
+    ss -tan | awk 'NR>1 {count[$2]++} END {for(s in count) print s": "count[s]}' | sort
+    echo ""
+    echo "=== Listening Ports ==="
+    ss -tulpn
+}
+
+# Open file handles count per process
+function open_files() {
+    echo "=== Processes with most open files ==="
+    lsof | awk '{print $1}' | sort | uniq -c | sort -rn | head -10 | awk '{print $2": "$1" files"}'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NETWORK FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Ping mit verschiedenen Targets
+function quick_ping() {
+    local targets=("8.8.8.8" "1.1.1.1" "google.com")
+    for target in "${targets[@]}"; do
+        echo "🔹 Testing: $target"
+        ping -c 3 -W 1 "$target" 2>&1 | tail -3
+    done
+}
+
+# Check if port is open remotely
+function port_scan_simple() {
+    if [ $# -lt 2 ]; then
+        echo "Usage: port_scan_simple <host> <port>"
+        return 1
+    fi
+    timeout 2 bash -c "echo > /dev/tcp/$1/$2" 2>/dev/null && echo "✅ Port $2 OPEN on $1" || echo "❌ Port $2 CLOSED on $1"
+}
+
+# Get external IP address
+function myextip() {
+    echo "External IP Addresses:"
+    echo -n "  Via ifconfig.me: "; curl -s ifconfig.me 2>/dev/null || echo "Failed"
+    echo -n "  Via icanhazip.com: "; curl -s icanhazip.com 2>/dev/null || echo "Failed"
+    echo -n "  Via ipify.org: "; curl -s api.ipify.org 2>/dev/null || echo "Failed"
+}
+
+# Speedtest (requires speedtest-cli)
+function internet_speed() {
+    if command -v speedtest &> /dev/null; then
+        speedtest --simple
+    elif command -v speedtest-cli &> /dev/null; then
+        speedtest-cli --simple
+    else
+        echo "❌ Install with: pip install speedtest-cli or sudo apt install speedtest"
+    fi
+}
+
+# Wi-Fi connection info
+function wifi_info() {
+    nmcli -g ACTIVE,SSID,SIGNAL device wifi | head -10
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PASSWORD & SECURITY FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Generate secure password
+function genpass() {
+    local len="${1:-32}"
+    openssl rand -base64 "$len" | tr -dc 'a-zA-Z0-9!@#$%^&*_-' | head -c "$len"
+    echo ""
+}
+
+# Hash string with various algorithms
+function hashit() {
+    if [ -z "$1" ]; then
+        read -sp "Enter string to hash: " input
+        echo ""
+    else
+        input="$1"
+    fi
+    
+    echo "MD5:     $(echo -n "$input" | md5sum | cut -d' ' -f1)"
+    echo "SHA1:    $(echo -n "$input" | sha1sum | cut -d' ' -f1)"
+    echo "SHA256:  $(echo -n "$input" | sha256sum | cut -d' ' -f1)"
+    echo "SHA512:  $(echo -n "$input" | sha512sum | cut -d' ' -f1)"
+}
+
+# File checksum
+function checksum() {
+    if [ -z "$1" ]; then
+        echo "Usage: checksum <file>"
+        return 1
+    fi
+    
+    if [ ! -f "$1" ]; then
+        echo "❌ File not found: $1"
+        return 1
+    fi
+    
+    echo "Checksums for: $1"
+    md5sum "$1"
+    sha1sum "$1"
+    sha256sum "$1"
+}
+
+# Check if password was leaked (Have I Been Pwned concept)
+function check_password_leak() {
+    echo "⚠️ WARNING: Never enter real passwords in scripts!"
+    echo "Use online services instead: https://haveibeenpwned.com/passwords"
+}
+
+# Set restrictive umask temporarily
+function secure_umask() {
+    umask 077
+    echo "✅ Umask set to 077 (new files: owner only)"
+    unset UMASK_SET  # Reset after session
+}
+
+# Backup important configs quickly
+function backup_configs() {
+    local dest="${1:-./backup_$(date +%Y%m%d_%H%M%S)}"
+    
+    mkdir -p "$dest"
+    
+    echo "Creating config backups in: $dest"
+    
+    declare -a configs=(
+        ".bashrc" ".bash_aliases" ".bash_functions"
+        ".profile" ".vimrc" ".tmux.conf"
+    )
+    
+    for conf in "${configs[@]}"; do
+        [ -f "~/$conf" ] && cp -v "~/$conf" "$dest/" 2>/dev/null
+    done
+    
+    # Add custom locations
+    [ -d "/etc/nginx" ] && cp -rv "/etc/nginx" "$dest/etc_nginx" 2>/dev/null
+    [ -f "/etc/fstab" ] && cp -v "/etc/fstab" "$dest/" 2>/dev/null
+    
+    echo "✅ Backup complete: $dest"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GIT HELPER FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Git status quick overview
+function gs() {
+    git status --short
+}
+
+# Git commit with message
+function gc() {
+    git commit -am "$1"
+}
+
+# Git push to origin
+function gp() {
+    git push origin "$1"
+}
+
+# Git pull from origin
+function gul() {
+    git pull origin "$1"
+}
+
+# Clone repo and cd into it
+function clonetocd() {
+    if [ -z "$1" ]; then
+        echo "Usage: clonetocd <repository_url>"
+        return 1
+    fi
+    git clone "$1" && cd "$(basename "$1" .git)"
+}
+
+# Show git branches
+function gb() {
+    git branch -a
+}
+
+# Git stash pop latest
+function gstpop() {
+    git stash list | tail -1 | cut -d: -f1 | xargs git stash pop
+}
+
+# Git interactive rebase with HEAD
+function grebase() {
+    git rebase -i HEAD~"${1:-3}"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DOCKER HELPER FUNCTIONS (IF INSTALLED)
+# ─────────────────────────────────────────────────────────────────────────────
+
+function docker_running() {
+    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+}
+
+function docker_images() {
+    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.Size}}"
+}
+
+function docker_stats_lite() {
+    docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+}
+
+function docker_prune_all() {
+    read -p "⚠️ This will remove all stopped containers, unused networks and dangling images. Continue? (y/N) " confirm
+    [[ "$confirm" == "y" ]] && docker system prune -a --volumes
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CLEANUP & MAINTENANCE FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Clean apt cache thoroughly
+function apt_deep_clean() {
+    echo "🧽 Deep cleaning APT packages..."
+    sudo apt autoremove -y
+    sudo apt autoclean
+    sudo apt clean
+    echo "✅ APT cleanup complete"
+}
+
+# Remove orphaned kernels (USE WITH CAUTION)
+function clean_kernels() {
+    echo "⚠️ This will list older kernels but NOT auto-remove them for safety."
+    echo "Current running kernel: $(uname -r)"
+    echo "Installed kernels:"
+    dpkg --list 'linux-image-*' | grep '^ii' | awk '{print $2, $3}'
+    echo ""
+    echo "To manually remove old ones use: sudo apt remove linux-image-<version>"
+}
+
+# Thumbs.db and OS junk removal
+function cleanup_junk() {
+    echo "🗑️ Removing common junk files..."
+    find . -name "Thumbs.db" -delete
+    find . -name ".DS_Store" -delete
+    find . -name "*.pyc" -delete
+    find . -name "__pycache__" -type d -exec rm -rf {} +
+    find . -name "*.swp" -delete
+    find . -name "*~" -delete
+    echo "✅ Junk cleanup complete"
+}
+
+# Trash emptied safely (alternative to rm)
+function trash_delete() {
+    if command -v trash-put &> /dev/null; then
+        trash-put "$@"
+        echo "✅ Moved to trash: $@"
+    else
+        echo "Install trash-cli: sudo apt install trash-cli"
+        return 1
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEVELOPMENT HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Python HTTP server quick start
+function pyserver() {
+    local port="${1:-8000}"
+    python3 -m http.server "$port"
+}
+
+# Node.js server quick start (http-server package)
+function node_server() {
+    npx http-server -p "${1:-8080}"
+}
+
+# PHP development server
+function phpserve() {
+    php -S localhost:"${1:-8000}"
+}
+
+# Watch directory for changes (requires entr or watchexec)
+function watch_changes() {
+    if command -v entr &> /dev/null; then
+        find . -type f | entr -s "echo 'Change detected at'\`date\`"
+    elif command -v watchexec &> /dev/null; then
+        watchexec -w . "echo Change detected"
+    else
+        echo "Need to install entr or watchexec"
+        return 1
+    fi
+}
+
+# Virtual environment setup helper
+function create_venv() {
+    local name="${1:-venv}"
+    python3 -m venv "$name"
+    source "$name/bin/activate"
+    echo "✅ Virtual environment '$name' created and activated"
+}
+
+# Node modules cleanup
+function npm_clean() {
+    rm -rf node_modules package-lock.json
+    npm cache clean --force
+    npm install
+    echo "✅ npm project cleaned and rebuilt"
+}
+
+# Project template creator
+function new_python_project() {
+    local proj_name="$1"
+    if [ -z "$proj_name" ]; then
+        echo "Usage: new_python_project <project_name>"
+        return 1
+    fi
+    
+    mkdir -p "$proj_name"
+    cd "$proj_name"
+    git init
+    echo "# $proj_name" > README.md
+    echo "__version__: \"0.1.0\"" > version.py
+    echo "[project]" > pyproject.toml
+    cat <<EOF >> requirements.txt
+# Dependencies go here
+pytest>=7.0
+black>=23.0
+flake8>=6.0
+EOF
+    echo "✅ Python project '$proj_name' initialized"
+}
+
+# JavaScript project template
+function new_node_project() {
+    local proj_name="$1"
+    if [ -z "$proj_name" ]; then
+        echo "Usage: new_node_project <project_name>"
+        return 1
+    fi
+    
+    mkdir -p "$proj_name"
+    cd "$proj_name"
+    npm init -y
+    mkdir src tests
+    echo "// Main entry point" > src/index.js
+    echo "// Tests" > tests/test.spec.js
+    echo "✅ Node.js project '$proj_name' initialized"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FUN & PRODUCTIVITY FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Display ASCII art banner
+function welcome_banner() {
+    clear
+    figlet "$USER" 2>/dev/null || echo "Welcome, $USER!"
+    sysinfo
+}
+
+# Daily motivation
+function motivate() {
+    fortune 2>/dev/null || echo "\"Success is not final, failure is not fatal.\" - Winston Churchill"
+}
+
+# Quick weather (requires curl)
+function quick_weather() {
+    location="${1:-Berlin}"
+    curl -s "wttr.in/${location}?Q" 2>/dev/null || echo "Weather unavailable"
+}
+
+# Countdown timer (in seconds)
+function countdown() {
+    if [ -z "$1" ]; then
+        echo "Usage: countdown <seconds>"
+        return 1
+    fi
+    
+    local end_time=$((SECONDS + $1))
+    while [ $SECONDS -lt $end_time ]; do
+        remaining=$((end_time - SECONDS))
+        printf "\r⏳ Time left: %02d:%02d  " $((remaining/60)) $((remaining%60))
+        sleep 1
+    done
+    echo -e "\n🎉 Time's up!"
+    play_alert_sound 2>/dev/null || echo "(Alert sound unavailable)"
+}
+
+# Pomodoro timer (25 min work, 5 min break)
+function pomodoro() {
+    echo "🍅 Starting Pomodoro (25 min work)..."
+    countdown 1500
+    echo "☕ Break time starts now! (5 min)"
+    countdown 300
+    echo "🔄 Ready for another round?"
+}
+
+# Random quote generator
+function quoteme() {
+    local quotes=(
+        "\"The best way to predict the future is to invent it.\" - Alan Kay"
+        "\"Talk is cheap. Show me the code.\" - Linus Torvalds"
+        "\"Premature optimization is the root of all evil.\" - Donald Knuth"
+        "\"There are only two kinds of languages: the ones people complain about and the ones nobody uses.\" - Bjarne Stroustrup"
+    )
+    echo "${quotes[RANDOM % ${#quotes[@]}]}"
+}
+
+# Screen recording stub (requires vdo/screenrecorder)
+function record_screen() {
+    echo "Screen recording requires tools like:"
+    echo "  - obs-studio"
+    echo "  - simplescreenrecorder"
+    echo "  - kazam"
+    echo "Run one of these:"
+    echo "  obs &"
+    echo "  simplescreenrecorder"
+    echo "  kazam"
+}
+
+# Clipboard helpers
+function clipboard_copy() {
+    if command -v xclip &> /dev/null; then
+        xclip -selection clipboard
+    elif command -v xsel &> /dev/null; then
+        xsel --clipboard
+    else
+        echo "Install xclip or xsel for clipboard support"
+        return 1
+    fi
+}
+
+function clipboard_paste() {
+    if command -v xclip &> /dev/null; then
+        xclip -selection clipboard -o
+    elif command -v xsel &> /dev/null; then
+        xsel --clipboard --output
+    else
+        echo "Install xclip or xsel for clipboard support"
+        return 1
+    fi
+}
+
+# Quick note append
+function notepad() {
+    local filename="${1:-~/notes.txt}"
+    echo "Appending to notes ($filename). Press Ctrl+D when done."
+    cat >> "$filename"
+    echo ""
+    echo "Saved note at: $(date)" >> "$filename"
+}
+
+# Quick todos list
+function todos() {
+    local todo_file="~/todos.list"
+    case "${1:-view}" in
+        add)
+            echo "- [ ] $2" >> "$todo_file"
+            echo "Added task: $2"
+            ;;
+        clear|done)
+            > "$todo_file"
+            echo "✓ Todos cleared"
+            ;;
+        *)
+            echo "=== TODO LIST ==="
+            [ -f "$todo_file" ] && cat "$todo_file" || echo "(No tasks yet)"
+            echo "================="
+            echo "Commands: todos add '<task>', todos clear, todos"
+            ;;
+    esac
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# UTILITY FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Color printing
+function colortext() {
+    local color="$1"
+    shift
+    case "$color" in
+        red|r) echo -e "\033[31m$*\033[0m" ;;
+        green|g) echo -e "\033[32m$*\033[0m" ;;
+        yellow|y) echo -e "\033[33m$*\033[0m" ;;
+        blue|b) echo -e "\033[34m$*\033[0m" ;;
+        magenta|m) echo -e "\033[35m$*\033[0m" ;;
+        cyan|c) echo -e "\033[36m$*\033[0m" ;;
+        white|w) echo -e "\033[37m$*\033[0m" ;;
+        *) echo "$*" ;;
+    esac
+}
+
+# Bold, underline, reset macros
+function bold() { echo -e "\033[1m$*\033[0m"; }
+function underline() { echo -e "\033[4m$*\033[0m"; }
+function success() { echo -e "\033[32m✅ SUCCESS: $*\033[0m"; }
+function warning() { echo -e "\033[33m⚠️ WARNING: $*\033[0m"; }
+function error() { echo -e "\033[31m❌ ERROR: $*\033[0m"; }
+
+# Progress spinner during long operations
+function spin() {
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+}
+
+# Timestamp prefix for logging
+function log_entry() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+}
+
+# Safe cd that prints destination
+function safe_cd() {
+    if [ -d "$1" ]; then
+        cd "$1" && echo "➡️ Now in: $(pwd)"
+    else
+        echo "❌ Directory doesn't exist: $1"
+        return 1
+    fi
+}
+
+# Count occurrences of something
+function counter() {
+    if [ $# -eq 0 ]; then
+        echo "Count lines in stdin"
+        wc -l
+    elif [ $# -eq 1 ]; then
+        echo "Lines in file: $1"
+        wc -l "$1"
+    else
+        echo "Args: $@"
+        eval "$*" | wc -l
+    fi
+}
+
+# Make script executable properly
+function make_exec() {
+    if [ -z "$1" ]; then
+        echo "Usage: make_exec <script_file>"
+        return 1
+    fi
+    chmod +x "$1"
+    echo "✅ Made executable: $1"
+}
+
+# Quick manual lookup (with fuzzy matching)
+function manlook() {
+    if [ -z "$1" ]; then
+        echo "Usage: manlook <command>"
+        return 1
+    fi
+    apropos "$1" | head -20
+}
+
+# Environment variables pretty print
+function dump_env() {
+    export | sort | nl
+}
+
+# Create symbolic link with confirmation
+function createsym() {
+    if [ $# -ne 2 ]; then
+        echo "Usage: createsym <target> <link_name>"
+        return 1
+    fi
+    ln -sf "$1" "$2"
+    echo "✅ Symlink created: $2 -> $1"
+}
+
+# Validate URL syntax
+function validurl() {
+    local url_regex='^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$'
+    [[ "$1" =~ $url_regex ]] && echo "✅ Valid URL" || echo "❌ Invalid URL"
+}
+
+# Convert units
+function convert_gb_mb() {
+    echo "$1 GB = $(( $1 * 1024 )) MB"
+}
+
+# Human readable byte sizes
+function bytes_to_hr() {
+    num=$1
+    if ((num >= 1073741824)); then
+        echo "$(awk "BEGIN {printf \"%.2f\", $num/1073741824}") GB"
+    elif ((num >= 1048576)); then
+        echo "$(awk "BEGIN {printf \"%.2f\", $num/1048576}") MB"
+    elif ((num >= 1024)); then
+        echo "$(awk "BEGIN {printf \"%.2f\", $num/1024}") KB"
+    else
+        echo "$num Bytes"
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EOF OF FUNCTION LIBRARY
+# ─────────────────────────────────────────────────────────────────────────────
+
+colortext cyan "📚 ~/.bash_functions loaded successfully!"
 
 # nautilius kontext-menü --> könnt functions ersetzen
 #cat > ~/.local/share/nautilus/scripts/echo-selection.sh <<'EOF'
