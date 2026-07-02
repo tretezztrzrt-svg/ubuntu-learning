@@ -2,7 +2,7 @@
 # =============================================================================
 # ~/.bash_functions
 # Bash-Funktionen für tägliche Aufgaben
-# Erstellt von Lumo | Date: 2026-07-02
+# Erstellt von Lumo | need ubuntu proofed
 # =============================================================================
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -958,6 +958,8 @@ function bytes_to_hr() {
 # ─────────────────────────────────────────────────────────────────────────────
 # EOF OF FUNCTION LIBRARY
 # ─────────────────────────────────────────────────────────────────────────────
+
+colortext cyan "📚 ~/.bash_functions loaded successfully!"
 
 colortext cyan "📚 ~/.bash_functions loaded successfully!"
 
