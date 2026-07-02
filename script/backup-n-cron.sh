@@ -42,12 +42,12 @@ echo "Zielobjekt: $TARGET" >> "$LOG_FILE"
 if [ -d "$TARGET" ]; then
     echo "Typ: Verzeichnis" >> "$LOG_FILE"
     # Als komprimiertes Archiv speichern (schont Platz)
-    tar -czf "${BACKUP_DIR}/${BACKUP_NAME}.tar.gz" -C "$(dirname "$TARGET")" "$TARGET_NAME"
+    tar -czf "${BACKUP_DIR}/dir/${BACKUP_NAME}.tar.gz" -C "$(dirname "$TARGET")" "$TARGET_NAME"
     echo "Erfolgreich als ${BACKUP_NAME}.tar.gz gesichert." >> "$LOG_FILE"
 
 elif [ -f "$TARGET" ]; then
     echo "Typ: Datei" >> "$LOG_FILE"
-    cp "$TARGET" "${BACKUP_DIR}/${BACKUP_NAME}"
+    cp "$TARGET" "${BACKUP_DIR}/file/${BACKUP_NAME}"
     echo "Erfolgreich als ${BACKUP_NAME} gesichert." >> "$LOG_FILE"
 
 else
