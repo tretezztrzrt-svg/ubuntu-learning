@@ -1,0 +1,5 @@
+# ------------------------------------------------------------------------------
+# softlink verknüpfungen anlegen (falls ordner für programme global genutzt) 
+# ln -s /home/user/desktop/projekte/2026/geheim /home/user/mein_projekt
+# hardlink datei verknüpfungen anlegen (falls datei für programme global genutzt) 
+# ln  /home/user/desktop/projekte/2026/geheim.sh /home/user/schnellzugriif.sh   
