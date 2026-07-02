@@ -1,0 +1,133 @@
+
+# --- Functions ----------------------------------------------------------------
+
+# Durchsucht Dateien rekursiv nach einem Suchbegriff
+# Nutzung: search "suchbegriff"
+function search() {
+    if [ -z "$1" ]; then
+        echo "Verwendung: search <suchbegriff>"
+        return 1
+    fi
+    # -r: rekursiv, -o: nur übereinstimmende Teile zeigen
+    # -i: Groß-/Kleinschreibung ignorieren, -I: Binärdateien überspringen
+    egrep -roi "$1" . | sort | uniq
+} # buggy? nochmals
+
+
+# Findet Dateien im aktuellen Verzeichnis, die mit dem Suchbegriff beginnen
+# Nutzung: whereis "dateiname"
+# function whereis() {
+#    if [ -z "$1" ]; then
+#        echo "Verwendung: whereis <dateiname>"
+#        return 1
+#   fi
+#    find . -type f -name "$1*"
+#} # buggy
+
+# Erstellt einen Ordner und wechselt sofort hinein
+# alias mkcd='bash -c "mkdir -p \"\$1\" && cd \"\$1\"" _' # Erstellt einen Ordner und wechselt sofort hinein >> functions mkdircd
+# Nutzung: mkdircd "ordnername"
+function mkdircd() {
+    if [ -z "$1" ]; then
+        echo "Verwendung: mkcd <ordnername>"
+        return 1
+    fi
+    mkdir -p "$1" && cd "$1"
+} # ubuntu-proofed
+
+# --- Universal entpacken/packen/packenhard ------------------------------------------
+alias packen-tarfix='tar -czvf' # Komprimiert einen Ordner zu .tar.gz
+alias packen-untar='tar -zxvf' # Entpackt eine .tar.gz Datei
+
+# sudo apt install p7zip-full
+
+function entpacken() {
+    if [ $# -ne 1 ]; then
+        echo "Error: No file specified."
+        return 1
+    fi
+
+    local archiv="$1"
+    if [ ! -f "$archiv" ]; then
+        echo "'$archiv' is not a valid file"
+        return 1
+    fi
+
+    case "$archiv" in
+        *.7z|*.7Z)
+            7z x -y "$archiv"
+
+            ;;
+        *)
+            echo "'$archiv' ist kein .7z Archiv"
+            return 1
+            ;;
+    esac
+}
+# hat geklappt?
+# 7z x "$1" # vorher 
+
+function packen() {
+    if [ $# -lt 2 ]; then
+        echo "Verwendung: packen <datei_oder_ordner> [zielname]"
+        return 1
+    fi
+
+    local quelle="$1"
+    local ziel="${2:-$(basename "$quelle").7z}"
+
+    # wenn kein .7z am Ende, dann ergänzen
+    case "$ziel" in
+        *.7z) ;; 
+        *) ziel="${ziel}.7z" ;;
+    esac
+    if [ ! -e "$quelle" ]; then
+        echo "Fehler: Quelle existiert nicht: $quelle"
+        return 1
+    fi
+    if [ -e "$ziel" ]; then
+        echo "Fehler: $ziel existiert bereits!"
+        return 1
+    fi
+
+    7z a -t7z "$ziel" "$quelle"
+    # 7z a -t7z -mx=9 "$ziel" "$quelle"
+    # 7z a "$ziel" "$quelle" - war der vorherige vorschlag
+} # hat geklappt
+
+function packen-hard() {
+    if [ $# -lt 2 ]; then
+        echo "Verwendung: packen <datei_oder_ordner> [zielname]"
+        return 1
+    fi
+
+    local quelle="$1"
+    local ziel="${2:-$(basename "$quelle").7z}"
+
+    # wenn kein .7z am Ende, dann ergänzen
+    case "$ziel" in
+        *.7z) ;; 
+        *) ziel="${ziel}.7z" ;;
+    esac
+    if [ ! -e "$quelle" ]; then
+        echo "Fehler: Quelle existiert nicht: $quelle"
+        return 1
+    fi
+    if [ -e "$ziel" ]; then
+        echo "Fehler: $ziel existiert bereits!"
+        return 1
+    fi
+
+    7z a -t7z -mx=9 "$ziel" "$quelle"
+} # buggy? nochmals
+
+# nautilius kontext-menü --> könnt functions ersetzen
+#cat > ~/.local/share/nautilus/scripts/echo-selection.sh <<'EOF'
+##!/usr/bin/env bash
+#echo "Auswahl:"
+#echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS"
+#EOF
+#chmod +x ~/.local/share/nautilus/scripts/echo-selection.sh
+#sudo apt update
+#sudo apt install nautilus-extension-gnome-terminal
+#nautilus -q
