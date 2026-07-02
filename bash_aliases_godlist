@@ -1,0 +1,523 @@
+# =============================================================================
+# ~/.bash_aliases
+# Volle Alias-Sammlung | Strukturiert nach Kategorien
+# Erstellt von Lumo | need ubuntu proofed
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NAVIGATION & VERZEICHNISSE
+# ─────────────────────────────────────────────────────────────────────────────
+
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ......="cd ../../../../.."
+
+# Benutzer spezifische Verzeichnisse
+alias alex="cd /home/alex/"
+alias home="cd ~"
+alias vera="cd /media/veracrypt1/"
+
+# Häufig genutzte Pfade
+alias doc="cd ~/Documents/"
+alias down="cd ~/Downloads/"
+alias pic="cd ~/Pictures/"
+alias mus="cd ~/Music/"
+alias vid="cd ~/Videos/"
+alias des="cd ~/Desktop/"
+alias tmp="cd /tmp/"
+alias var="cd /var/"
+alias logs="cd /var/log/"
+alias etc="cd /etc/"
+alias boot="cd /boot/"
+
+# System wichtige Ordner
+alias root_cwd="cd /root/"
+alias srv="cd /srv/"
+alias opt="cd /opt/"
+alias usr="cd /usr/"
+alias bin_alias="cd /bin/"
+alias sbin="cd /sbin/"
+
+# Temporäre Arbeitsoordner
+alias work_tmp="mkdir -p ~/work_temp && cd ~/work_temp"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEMINFORMATIONEN
+# ─────────────────────────────────────────────────────────────────────────────
+
+alias osinfo="lsb_release -a"
+alias distro="cat /etc/*release"
+alias kernel="uname -a"
+alias hostname_detail="hostnamectl"
+alias cpu_arch="lscpu"
+alias mem_info="free -h --si"
+alias swap_info="swapon --show"
+alias uptime_sys="uptime -p"
+alias load_avg="cat /proc/loadavg"
+alias who_logged="who"
+alias logged_users="w"
+alias login_history="last -10"
+alias current_user="id"
+alias groups_current="groups"
+alias shell_version="echo \$BASH_VERSION"
+
+# Hardware Übersicht kompakt
+alias hardware_short="lshw -short"
+alias hardware_full="sudo lshw"
+alias pci_devices="lspci"
+alias usb_devices="lsusb"
+alias block_devices="lsblk"
+alias drive_info="hdparm -I /dev/sda"
+alias smart_info="sudo smartctl -a /dev/sda"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FESTPLATTENSPEICHER & DISK USAGE
+# ─────────────────────────────────────────────────────────────────────────────
+
+alias df="df -hPT | column -t"
+alias df_inodes="df -hi"
+alias mount_disks="mount | column -t"
+alias disk_layout="sudo fdisk -l"
+alias blk_uuid="blkid"
+
+# Alternative Namen für DF
+alias platz="df -h"
+alias space="df -h"
+alias platte="df -h"
+alias freier_platz="df -h /"
+
+# Disk Usage Kurzformen
+alias dus="du -sh *"
+alias dusort="du -sh * | sort -h"
+alias bigfiles="du -ah . | sort -rh | head -20"
+alias largedir="du -hs /* 2>/dev/null | sort -hr"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROZESSVERWALTUNG
+# ─────────────────────────────────────────────────────────────────────────────
+
+alias ps_all="ps aux"
+alias ps_ef="ps -ef"
+alias ps_tree="pstree -ap"
+alias proc_top="top -bn1 | head -30"
+
+# Top Varianten
+alias top_mem="top -o %MEM"
+alias cpu_top="top -o %CPU"
+
+# Alternative Process Viewer (priorisiert htop falls installiert)
+alias top_cmd="command -v htop >/dev/null 2>&1 && htop || top"
+
+# Kill Varianten
+alias kill_force="kill -9"
+alias kill_term="kill -15"
+alias kill_hang="killall"
+alias zap="kill -9"
+
+# Prozess nach Name suchen
+alias myps="ps aux | grep"
+
+# Zombie Prozesse finden
+alias zombies="ps aux | awk '\$8 ~ /Z/'"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SPEICHERVERBRAUCH (RAM ANALYSE)
+# ─────────────────────────────────────────────────────────────────────────────
+
+alias ram_used="ps aux --sort=-%mem | head -15"
+alias ram_top_10="ps aux --sort=-%mem | awk 'NR<=11{print \$11,\$3,\$4}'"
+
+# Swap nutzennde Prozesse
+alias swap_users="ps aux | grep '[S]'swap''"
+
+# Memory pro Prozess detailliert
+alias mem_details="cat /proc/meminfo | head -20"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NETZWERK
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Verbindungstests
+alias ping_google="ping -c 4 8.8.8.8"
+alias ping_dns="ping -c 4 dns.google"
+alias trace_path="traceroute -n google.com"
+alias track_route="tracepath google.com"
+
+# Netzwerk Informationen
+alias ip_addr="ip addr show"
+alias ip_routes="ip route show"
+alias net_config="ip -br addr show"
+alias mac_list="ip link show | grep link/ether"
+
+# Port Status
+alias ports_listen="ss -tulpn"
+alias port_check="netstat -tulpn"
+alias sockets_active="ss -state established"
+
+# DNS Abfragen
+alias dns_lookup="nslookup"
+alias dig_query="dig"
+alias host_find="host"
+
+# Download Tools
+alias wget_cli="wget"
+alias curl_get="curl -O"
+alias curl_view="curl -I"
+
+# SSH Schnellzugriffe
+alias ssh_conn="ssh -v"
+alias scp_file="scp -r"
+alias rsync_bck="rsync -avh --progress"
+
+# My IP Adressen (extern/intern)
+alias my_ip_local="hostname -I"
+alias my_ip_ext="curl -s ifconfig.me"
+alias my_dns="curl -s myip.dk"
+
+# Firewall Status (UFW)
+alias fw_status="sudo ufw status verbose"
+alias fw_on="sudo ufw enable"
+alias fw_off="sudo ufw disable"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DATEIVERWALTUNG
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Copy/Verschieben mit Sicherheit
+alias cp_safe="cp -iv"
+alias mv_safe="mv -iv"
+alias rm_safe="rm -iv"
+alias rmdir_safe="rm -rfiv"
+
+# Alternative Namen
+alias copy="cp_safe"
+alias move="mv_safe"
+alias remove="rm_safe"
+
+# Datei erstellen
+alias touch_new="touch"
+alias empty_file="touch"
+
+# Links erstellen
+alias soft_link="ln -s"
+alias hard_link="ln"
+
+# File Type erkennen
+alias filetype="file"
+alias mime_type="file -i"
+
+# Datei Größe anzeigen
+alias filesize="ls -lh"
+alias size_human="ls -alh"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEXTBEARBEITUNG & SICHTBARKEIT
+# ─────────────────────────────────────────────────────────────────────────────
+
+alias cat_less="less"       # Cat ersetzt durch less sicherer
+alias view="less"
+alias more_read="less"
+alias tail_live="tail -f"
+alias tail_lines="tail -n 50"
+alias head_first="head -n 20"
+alias lines_count="wc -l"
+alias word_count="wc -w"
+
+# Editor shortcuts
+alias nano_edit="nano"
+alias vim_edit="vim"
+alias micro_edit="micro"
+alias pico_edit="pico"
+
+# Diff Vergleiche
+alias diff_files="diff --suppress-common-lines -y"
+alias compare="sdiff"
+alias patch_apply="patch"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SUCHE (FIND GREP)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Find Basen
+alias find_here="find ."
+alias find_name="find . -name"
+alias find_type_f="find . -type f"
+alias find_type_d="find . -type d"
+alias find_empty="find . -empty"
+alias find_large="find . -size +100M"
+
+# Grep schnellformen
+alias g="grep --color=auto"
+alias gi="grep -ri --color=auto"
+alias gf="grep -rl --color=auto"
+
+# Text Suchen rekursiv
+alias txt_search="grep -rnw . -e"
+alias text_find="grep -ril"
+
+# Suche ohne Binärdateien
+alias clean_find="find . -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.exe' ! -name '*.o'"
+
+# Durchsuche PATH
+alias which_bin="which"
+alias type_cmd="type -a"
+alias where_exe="whereis"
+alias locate_it="locate"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LOGS & JOURNALCTL
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Systemd Journal Control
+alias journal_logs="sudo journalctl -xe"
+alias journal_follow="sudo journalctl -f"
+alias journal_boot="journalctl -b"
+alias journal_errors="journalctl -p err"
+alias journal_warnings="journalctl -p warning"
+
+# Service Logs
+alias syslog="sudo tail -f /var/log/syslog"
+alias auth_log="sudo tail -f /var/log/auth.log"
+alias kern_log="sudo dmesg | tail -50"
+
+# Alte Log suche
+alias old_logs="find /var/log -name '*.log*' -mtime +30"
+alias huge_logs="find /var/log -type f -size +50M"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SERVICE MANAGEMENT (SYSTEMD/SYSVINIT)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Systemd Grundlagen
+alias svc_start="sudo systemctl start"
+alias svc_stop="sudo systemctl stop"
+alias svc_restart="sudo systemctl restart"
+alias svc_reload="sudo systemctl reload"
+alias svc_status="systemctl status"
+alias svc_enable="sudo systemctl enable"
+alias svc_disable="sudo systemctl disable"
+alias svc_isactive="systemctl is-active"
+alias svc_enabled="systemctl is-enabled"
+
+# List Services
+alias list_services="systemctl list-units --type=service"
+alias failed_svs="systemctl list-units --failed"
+alias all_services="systemctl list-unit-files --type=service"
+
+# SysVinit Alternativen (falls verwendet)
+alias service_list="/etc/init.d"
+alias init_start="sudo service"
+alias init_stop="sudo service"
+alias chkconfig="update-rc.d"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PACKAGE MANAGEMENT (APT/DPKG/SNAP/FLATPAK)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# APT Basics
+alias apt_update="sudo apt update"
+alias apt_upgrade="sudo apt upgrade -y"
+alias apt_full_upg="sudo apt full-upgrade -y"
+alias apt_install="sudo apt install -y"
+alias apt_remove="sudo apt remove -y"
+alias apt_purge="sudo apt purge -y"
+
+# APT Advanced
+alias apt_clean="sudo apt autoremove -y && sudo apt autoclean && sudo apt clean"
+alias apt_cache="apt-cache policy"
+alias apt_search="apt search"
+alias apt_show="apt show"
+alias installed_pkgs="dpkg --get-selections | grep install"
+alias pkgs_to_remove="apt-mark showmanual"
+alias held_pkgs="apt-mark showhold"
+alias broken_pkgs="sudo dpkg --configure -a"
+alias fix_deps="sudo apt --fix-broken install"
+
+# Snap Paket Manager
+alias snap_find="snap find"
+alias snap_inst="sudo snap install"
+alias snap_rem="sudo snap remove"
+alias snap_refresh="sudo snap refresh"
+alias snap_list="snap list --all"
+alias snap_info="snap info"
+alias snaps_installed="snap list"
+
+# Flatpak Paket Manager
+alias flatpaks_search="flatpak search"
+alias flatpaks_install="flatpak install"
+alias flatpaks_remove="flatpak uninstall"
+alias flatpaks_update="flatpak update"
+alias flatpaks_list="flatpak list"
+alias flathub_add="flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo"
+
+# Install Presets
+alias install_dev="sudo apt install build-essential git vim nano curl wget htop tmux tree"
+alias install_media="sudo apt install vlc ffmpeg gimp audacity"
+alias install_net="sudo apt install nmap wireshark tcpdump iproute2 net-tools"
+alias install_security="sudo apt install fail2ban lynis clamav clamtk rkhunter chkrootkit"
+
+# Quick Installation Templates
+alias install_common="sudo apt install -y micro less mc btop htop p7zip-full make git meld neofetch ranger"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BENUTZER & GRUPPEN
+# ─────────────────────────────────────────────────────────────────────────────
+
+# User Verwaltung
+alias user_add="sudo adduser"
+alias user_del="sudo deluser"
+alias pass_set="sudo passwd"
+alias switch_user="su -"
+alias su_root="sudo -i"
+alias become_root="sudo -i"
+alias run_as="sudo -u"
+alias lock_account="sudo passwd -l"
+alias unlock_account="sudo passwd -u"
+alias expire_passwd="sudo chage"
+
+# Gruppen Verwaltung
+alias grp_add="sudo addgroup"
+alias grp_del="sudo delgroup"
+alias grp_members="getent group"
+alias user_groups="groups"
+alias my_uid="id -u"
+alias my_gid="id -g"
+
+# Login Infos
+alias sessions="who"
+alias login_times="lastlog"
+alias recent_login="last -10"
+alias sudo_usage="sudo last | head -20"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RECHTE & BESETZER
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Permission Changes
+alias chmod_o="chmod o"
+alias chmod_g="chmod g"
+alias chmod_u="chmod u"
+alias chmod_a="chmod a"
+alias chown_basic="chown"
+alias chgrp_basic="chgrp"
+alias acl_view="getfacl"
+alias acl_set="setfacl"
+
+# Execute Flags
+alias exe_add="chmod +x"
+alias exe_remove="chmod -x"
+alias perm_rwx="chmod 755"
+alias perm_private="chmod 700"
+alias perm_public="chmod 755"
+
+# Ownership Batch
+alias recursive_own="chown -R"
+alias recursive_grp="chgrp -R"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ARCHIVIERUNG & KOMPRESSION
+# ─────────────────────────────────────────────────────────────────────────────
+
+# TAR Basics
+alias tar_create="tar -czvf"
+alias tar_extract="tar -xzvf"
+alias tar_list="tar -tzvf"
+alias tar_bz="tar -cjvf"
+
+# ZIP Operations
+alias zip_file="zip -r"
+alias unzip_file="unzip"
+alias zip_ls="zipinfo"
+
+# 7ZIP (benötigt p7zip-full)
+alias sevenz_pack="7z a"
+alias sevenz_unpack="7z x"
+alias sevenz_test="7z t"
+alias sevenz_list="7z l"
+
+# Compressed View
+alias gz_cat="zcat"
+alias bz_cat="bzcat"
+alias xz_cat="xzcat"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GEWINNER: QUICK COMMAND FIXES
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Root Fehler Korrektur
+alias bitte="sudo \$(history -p !!)"
+alias fuck="sudo \$(history -p !!)"
+alias please="sudo \$(history -p !!)"
+alias pls="sudo \$(fc -ln -1)"
+alias retry_root="sudo \$(history -p !!)"
+
+# Typo Korrekturen
+alias sl="ls"               # Vertippt von ls zu sl
+classical_err="sl"
+
+# Clear Screen
+alias cls="clear"
+alias clr="clear"
+alias screen_clear="reset"
+
+# Shell Refresh
+alias source_me=". ~/.bashrc"
+alias refresh_env="source ~/.bashrc && source ~/.bash_aliases && source ~/.bash_functions"
+alias reload_shell="exec \$SHELL -l"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MISCELLANEOUS / SONSTIGE
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Geschichte Analyse
+alias his="history"
+alias hg="history | grep"
+alias his_last="history 20"
+alias profile_me="history | awk '{print \$2}' | sort | uniq -c | sort -rn | head -10"
+
+# Path anzeigen
+alias path_display="echo -e \${PATH//:/\\n}"
+alias env_vars="env | sort"
+alias print_env="printenv"
+
+# Zufällig Generieren
+alias random_pw="openssl rand -base64 32"
+alias random_hex="openssl rand -hex 32"
+alias random_str="date +%s | sha256sum | base64 | head -c 32"
+
+# Uhrzeit & Datum
+alias date_now="date '+%Y-%m-%d %H:%M:%S'"
+alias cal_view="cal"
+alias cal_year="ncal -y"
+alias timezone="timedatectl"
+
+# Fun Commands
+alias matrix="cmatrix -b"
+alias moo="apt-get moo"
+alias fortune_cookie="fortune"
+alias cowsay_text="cowsay"
+alias banner_msg="banner"
+
+# Shutdown & Reboot
+alias shutdown_now="sudo poweroff"
+alias reboot_now="sudo reboot"
+alias suspend_now="systemctl suspend"
+alias hibernate="systemctl hibernate"
+
+# Wichtige Shortcuts
+alias help_me="man"
+alias info_docs="info"
+alias what_is="whatis"
+alias describe="apropos"
+
+# Terminal Tricks
+alias peek="watch -n 1"
+alias loop_ls="while true; do clear; ls -la; sleep 1; done"
+alias watch_dir="watch -n 2 -l ls -la"
+
+# Vim Quickstarts
+alias vi_noswap="vim -n"
+alias vim_ro="vim -R"
+alias view_ro="view"
