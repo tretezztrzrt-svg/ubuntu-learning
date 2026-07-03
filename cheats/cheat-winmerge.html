@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WinMerge Alternative for Ubuntu</title>
+</head>
+<body>
+  <h1>WinMerge Alternative for Ubuntu</h1>
+  <p>Ubuntu users can use several graphical and command-line diff tools. Here are good alternatives and some useful scripts.</p>
+
+  <h2>Graphical tools</h2>
+  <ul>
+    <li><strong>Meld</strong>
+      <ul>
+        <li>Install: <code>sudo apt install meld</code></li>
+        <li>Launch: <code>meld file1 file2</code> or <code>meld dir1 dir2</code></li>
+      </ul>
+    </li>
+    <li><strong>KDiff3</strong>
+      <ul>
+        <li>Install: <code>sudo apt install kdiff3</code></li>
+        <li>Launch: <code>kdiff3 file1 file2</code></li>
+      </ul>
+    </li>
+    <li><strong>Beyond Compare</strong> (proprietary)
+      <ul>
+        <li>Download from official site and install .deb</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>Command-line alternatives</h2>
+  <ul>
+    <li><strong>diff</strong>
+      <ul>
+        <li>Basic compare: <code>diff -u file1 file2</code></li>
+      </ul>
+    </li>
+    <li><strong>colordiff</strong>
+      <ul>
+        <li>Install: <code>sudo apt install colordiff</code></li>
+        <li>Use: <code>colordiff -u file1 file2</code></li>
+      </ul>
+    </li>
+    <li><strong>vimdiff</strong>
+      <ul>
+        <li>Built in Vim diff mode: <code>vimdiff file1 file2</code></li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>Simple script for unified diff</h2>
+  <pre><code>#!/bin/bash
+if [ "$#" -ne 2 ]; then
+  echo "Usage: $0 file1 file2"
+  exit 1
+fi
+
+colordiff -u "$1" "$2" | less -R
+</code></pre>
+  <p>Save as <code>diffview</code>, make executable with <code>chmod +x diffview</code>, and run <code>./diffview file1 file2</code>.</p>
+
+  <h2>Git-friendly diff</h2>
+  <p>For repo comparisons, use:</p>
+  <pre><code>git difftool --tool=meld</code></pre>
+</body>
+</html>
