@@ -47,6 +47,7 @@ alias exorzist='kill -9' # Sendet das Standard-Beendigungssignal an eine PID (SI
 alias psaux='ps -aux' # Zeigt alle laufenden Prozesse im System an
 alias psax='ps -aux' # Zeigt alle laufenden Prozesse im System an
 # btop, btop, btop everything is btop!!!!!!
+# sudo apt install glances -> try it
 alias top='btop'
 alias btop='btop'
 alias htop='btop'
