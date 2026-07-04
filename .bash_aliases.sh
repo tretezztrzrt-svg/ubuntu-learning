@@ -84,17 +84,15 @@ alias pls="sudo \$(fc -ln -1)"
 
 # history
 alias hg="history | grep"
-alias ao-history-grep="history | grep"
+alias history-grep="hg"
 # profile-me func() is fun
 
 # Wichtige Shortcuts
 alias ao-help_me="echo 'man'"
-alias ao-info_docs="echo 'info'"
-alias ao-what_is="echo 'whatis'"
-alias ao-describe="echo 'apropos'"
-alias ao-tldr= 'echo "tldr.appinabrowsser"'
+alias tldr= 'echo "tldr.appinabrowsser"'
+alias cheatsh='echo "cheat.sh/cd"'
 
 # Uhrzeit & Datum
-alias ao-date_now="date '+%Y-%m-%d %H:%M:%S'"
+alias date_now="date '+%Y-%m-%d %H:%M:%S'"
 # Schleifen Sammlung
-alias ao-schleife='cho "while true; do clear; ls -la; sleep 1; done"' # macht es so lange bis unendlich
+alias schleife='echo "while true; do clear; ls -la; sleep 1; done"' # macht es so lange bis unendlich
