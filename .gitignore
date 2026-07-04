@@ -1,0 +1,19 @@
+# Ignore local backup and trash folders entirely
+backup/
+trash/
+
+# Ignore personal shell configuration that should not be public
+.bashrc
+.bash_profile
+.profile
+.bash_logout
+
+# Common editor and OS temporary files
+*~
+*.swp
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
