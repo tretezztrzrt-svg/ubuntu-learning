@@ -1,99 +1,53 @@
-# ------------------------------------------------------------------------------
-# softlink und hardlink - Praxisbeispiele
-#
-# Kurze Erinnerung:
-# - Symbolischer Link (Symlink / soft link): ein Verweis auf einen Pfad (String).
-#   Kann auf Dateien oder Verzeichnisse zeigen, auch über Dateisystemgrenzen.
-# - Hard Link: zusätzlicher Dateiname, der auf dieselbe Inode zeigt (gleiches Datenobjekt).
-#   Nur im selben Dateisystem möglich.
-#
-# PRAKTISCHE BEISPIELE
-# 1) Deployment / Releases (häufig verwendeter Symlink-Use-Case)
-#    Idee: Du hast mehrere Release-Ordner und ein "current"-Symlink zeigt auf die aktive Version.
-#
-#    mkdir -p ~/deploy/releases/2026-07-04
-#    echo "v1" > ~/deploy/releases/2026-07-04/index.html
-#    ln -sfn ~/deploy/releases/2026-07-04 ~/deploy/current
-#    # Jetzt referenziert ~/deploy/current die aktuelle Version. Beim Rollback oder Upgrade
-#    # wird einfach der Symlink umgebogen:
-#    mkdir -p ~/deploy/releases/2026-07-05
-#    echo "v2" > ~/deploy/releases/2026-07-05/index.html
-#    ln -sfn ~/deploy/releases/2026-07-05 ~/deploy/current
-#    # Webserver kann auf ~/deploy/current zeigen, ohne Pfade ändern zu müssen.
-#
-#    Hinweise:
-#    - ln -sfn: -s = symlink, -f = force (überschreiben), -n = treat target as file when replacing a symlink
-#    - Das ist die typische Art, Releases atomar umschaltbar zu machen.
-#
-# 2) Globale Programm-Dateien (Symlink in /usr/local/bin)
-#    Beispiel: Versioniertes Programm in /opt/myapp/version-x.y.z/bin/myapp
-#    sudo ln -s /opt/myapp/version-x.y.z/bin/myapp /usr/local/bin/myapp
-#    Wenn neue Version kommt: neu linken statt alte Datei zu ersetzen.
-#
-# 3) Platz sparen mit Hardlinks (Backup/Clone ohne Kopieren)
-#    Use-Case: du willst viele Kopien einer unveränderten Datei anlegen, ohne den Speicher zu verdoppeln.
-#    # Beispiel: Erstelle Datei und zwei Hardlinks
-#    mkdir -p ~/linktest && cd ~/linktest
-#    echo "Geheimer Inhalt" > file-original.txt
-#    ln file-original.txt file-hardlink.txt
-#    # Jetzt zeigen file-original.txt und file-hardlink.txt auf dieselbe Inode.
-#
-#    # Prüfen (sichtbar wird gleiche Inode-Nummer):
-#    stat -c '%n -> inode=%i, links=%h' file-original.txt file-hardlink.txt
-#    # Ausgabebeispiel: file-original.txt -> inode=131072, links=2
-#
-#    Wenn du eine der Dateien löschst, bleiben die Daten erhalten, solange mindestens ein Hardlink existiert:
-#    rm file-original.txt
-#    cat file-hardlink.txt  # funktioniert weiterhin
-#
-#    Typische Verwendung: Tools wie rsync --link-dest oder cp -al zum Erstellen von inkrementellen Backups
-#    (schnell und platzsparend), z.B.:
-#      rsync -a --link-dest=/backups/previous /source/ /backups/new
-#    oder
-#      cp -al /backups/latest /backups/2026-07-04
-#
-# 4) Erkennung und Debugging
-#    # Symlinks finden (in Home, bis 3 Ebenen tief):
-#    find ~ -maxdepth 3 -type l -ls
-#    # Zeige Ziel eines Symlinks an:
-#    readlink -f ~/deploy/current
-#    # oder nur den direkten Zielstring:
-#    readlink ~/deploy/current
-#
-#    # Dateien mit mehreren Hardlinks finden (ganzer Home-Baum):
-#    find ~ -type f -links +1 -ls
-#    # Finde alle Pfade, die auf dieselbe Datei zeigen (gleiche Inode):
-#    find /path/to/search -samefile /path/to/some/file -ls
-#
-#    # Inode anzeigen:
-#    stat -c '%n -> inode=%i, links=%h, size=%s' /path/to/file
-#
-# 5) Experimentiere sicher (Sandbox-Beispiel im /tmp)
-#    mkdir -p /tmp/link-demo && cd /tmp/link-demo
-#    echo "hello" > a.txt
-#    ln -s a.txt a-symlink.txt
-#    ln a.txt a-hardlink.txt
-#    ls -l
-#    # Beobachte: a-symlink.txt ist ein Link (l...), zeigt auf a.txt; a-hardlink.txt ist ein normaler Link-Eintrag
-#    stat -c '%n -> inode=%i, links=%h' *
-#    # Lösche a.txt und prüfe:
-#    rm a.txt
-#    cat a-hardlink.txt      # funktioniert noch
-#    cat a-symlink.txt      # broken link (readlink zeigt keinen Inhalt mehr)
-#
-# WICHTIGE EINSCHRÄNKUNGEN
-# - Hardlinks für Verzeichnisse werden in der Regel nicht erlaubt (können das Dateisystem durcheinanderbringen).
-# - Hardlinks funktionieren nur auf demselben Dateisystem; Symlinks können auf andere Partitionen/Netzlaufwerke verweisen.
-# - Windows .lnk Dateien sind andere Dinge (Dateiformat), nutze auf Windows "mklink" für echte symlinks/hardlinks.
-#
-# KURZREFERENZ (Befehle)
-# ln -s <ziel> <linkname>        # symbolischen Link anlegen
-# ln <ziel> <linkname>           # hardlink anlegen
-# readlink <link>                # Ziel eines symlinks anzeigen
-# readlink -f <link>             # Aufgelöster absoluter Pfad
-# stat -c '%n -> inode=%i, links=%h' <datei>  # inode und link-count
-# find <pfad> -type l -ls        # symlinks suchen
-# find <pfad> -type f -links +1 -ls  # dateien mit mehreren hardlinks finden
-# find <pfad> -samefile <ziel> -ls   # alle pfade die auf dieselbe inode zeigen
-#
-# ENDE
+# Soft- vs. Hardlink — Kurz & Praxis
+
+Kurz: Symlinks sind Verweise auf Pfade, Hardlinks sind zusätzliche Dateinamen, die auf dieselbe Inode zeigen.
+
+## Unterschied
+- Symbolischer Link (Symlink)
+  - Enthält einen Pfad‑String, kann auf Dateien oder Verzeichnisse und über Dateisysteme hinweg zeigen.
+  - Wird broken, wenn das Ziel gelöscht wird.
+- Hard Link
+  - Zweiter (oder weiterer) Name für dieselbe Inode — identische Daten, andere Namen.
+  - Nur im selben Dateisystem möglich; erst gelöscht, wenn alle Links entfernt sind.
+
+## Kompakte Praxis‑Beispiele
+- Release‑Switch (Symlink, atomar):
+
+  mkdir -p ~/deploy/releases/2026-07-04
+  ln -sfn ~/deploy/releases/2026-07-04 ~/deploy/current
+
+  # Zum Umschalten: neuen Release‑Ordner anlegen und erneut ln -sfn ausführen.
+
+- Globalen Befehl verlinken (Symlink):
+
+  sudo ln -s /opt/myapp/version-x.y.z/bin/myapp /usr/local/bin/myapp
+
+- Platz sparen (Hardlink):
+
+  mkdir -p ~/linktest && cd ~/linktest
+  echo "daten" > file-original.txt
+  ln file-original.txt file-hardlink.txt
+  stat -c '%n -> inode=%i, links=%h' file-original.txt file-hardlink.txt
+
+  # Lösche einen Namen: rm file-original.txt — file-hardlink.txt bleibt lesbar.
+
+## Erkennen / Debug
+- Symlinks finden (Home, 3 Ebenen):
+  find ~ -maxdepth 3 -type l -ls
+- Ziel eines Symlinks anzeigen:
+  readlink -f ~/deploy/current
+- Dateien mit mehreren Hardlinks:
+  find ~ -type f -links +1 -ls
+- Alle Pfade zu einer Inode:
+  find /path -samefile /path/to/file -ls
+- Inode & Link‑Count:
+  stat -c '%n -> inode=%i, links=%h, size=%s' /path/to/file
+
+## Kurzreferenz
+- ln -s <ziel> <linkname>
+- ln <ziel> <linkname>
+- readlink -f <link>
+- stat -c '%n -> inode=%i, links=%h' <datei>
+
+---
+Kleines Sandbox‑Test: siehe Abschnitt "Platz sparen" — sicher in /tmp testen.
