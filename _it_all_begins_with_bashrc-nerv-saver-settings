@@ -12,11 +12,14 @@
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
 #HISTSIZE=10001
 #HISTFILESIZE=20001
-
+#
 # sudo visudo
 # Defaults env_reset > Defaults env_reset, timestamp_timeout=60
 # passworteingabe unter 1h # ubuntu-proofed
-############## current vm-uwuntu
+# ------------------------------------------------------------------------------ 
+############## current vm-uwuntu ##############
+############## current vm-uwuntu ##############
+############## current vm-uwuntu ##############
 # ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
@@ -116,3 +119,5 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+############## not my prod ##############
