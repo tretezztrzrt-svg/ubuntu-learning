@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================================
 #  AO – Ubuntu System Information Script
-#  Erweiterte Systeminformationen mit hübscher Awk-Formatierung
+#  need proof
 #  Ausgabe in Datei: ao_sysinfo_YYYYMMDD_HHMMSS.txt
 # ============================================================
 
@@ -25,6 +25,120 @@ try_sudo() {
         "$@" 2>/dev/null || echo "  (keine Berechtigung oder Befehl fehlgeschlagen)"
     fi
 }
+
+# ---- Bedingte Aliase (nur bei interaktiver Shell oder Sourcen)
+if [[ $- == *i* ]] || [ "${0}" != "${BASH_SOURCE}" ]; then
+    has_cmd lshw && alias hardware_short='lshw -short'
+    if has_cmd lshw; then
+        if has_cmd sudo && sudo -n true 2>/dev/null; then
+            alias hardware_full='sudo lshw'
+        else
+            alias hardware_full='lshw'
+        fi
+    fi
+    has_cmd lspci && alias pci_devices='lspci'
+    has_cmd lsusb && alias usb_devices='lsusb'
+    has_cmd lsblk && alias block_devices='lsblk'
+    has_cmd hdparm && alias drive_info='hdparm -I /dev/sda'
+    if has_cmd smartctl; then
+        if has_cmd sudo && sudo -n true 2>/dev/null; then
+            alias smart_info='sudo smartctl -a /dev/sda'
+        else
+            alias smart_info='smartctl -a /dev/sda'
+        fi
+    fi
+fi
+
+# ---- Monitoring-Funktionen (kompakt)
+function mem_hogs() {
+    if ! has_cmd ps; then echo "ps nicht verfügbar"; return; fi
+    echo "=== Top 10 Memory Consumers ==="
+    if has_cmd column; then
+        ps aux --sort=-%mem 2>/dev/null | awk 'NR==1{printf "%-8s %-6s %s\n","%MEM","PID","COMMAND"} NR>1 && NR<=11{printf "%6.2f %-6s %s\n",$4,$2,$11}' | column -t
+    else
+        ps aux --sort=-%mem 2>/dev/null | awk 'NR==1{printf "%-8s %-6s %s\n","%MEM","PID","COMMAND"} NR>1 && NR<=11{printf "%6.2f %-6s %s\n",$4,$2,$11}'
+    fi
+}
+
+function cpu_hogs() {
+    if ! has_cmd ps; then echo "ps nicht verfügbar"; return; fi
+    echo "=== Top 10 CPU Consumers ==="
+    if has_cmd column; then
+        ps aux --sort=-%cpu 2>/dev/null | awk 'NR==1{printf "%-8s %-6s %s\n","%CPU","PID","COMMAND"} NR>1 && NR<=11{printf "%6.2f %-6s %s\n",$3,$2,$11}' | column -t
+    else
+        ps aux --sort=-%cpu 2>/dev/null | awk 'NR==1{printf "%-8s %-6s %s\n","%CPU","PID","COMMAND"} NR>1 && NR<=11{printf "%6.2f %-6s %s\n",$3,$2,$11}'
+    fi
+}
+
+function conn_summary() {
+    if ! has_cmd ss; then echo "ss nicht verfügbar"; return; fi
+    echo "=== Active Connections (by state) ==="
+    ss -tan 2>/dev/null | awk 'NR>1{count[$1]++}END{for(s in count) print s": "count[s]}' | sort
+    echo ""
+    echo "=== Listening Ports ==="
+    ss -tulpn 2>/dev/null
+}
+
+function open_files() {
+    if ! has_cmd lsof; then echo "lsof nicht verfügbar"; return; fi
+    echo "=== Processes with most open files ==="
+    lsof 2>/dev/null | awk '{print $1}' | sort | uniq -c | sort -rn | head -10 | awk '{print $2": "$1" files"}'
+}
+
+function check_cmds() {
+    local miss=()
+    for cmd in "$@"; do
+        if ! has_cmd "$cmd"; then
+            miss+=("$cmd")
+        fi
+    done
+    if [ ${#miss[@]} -eq 0 ]; then
+        echo "Alle überprüften Befehle sind vorhanden."
+    else
+        echo "Fehlende Befehle: ${miss[*]}"
+        echo "Installationshinweis: unter Debian/Ubuntu: sudo apt install <paket>" 
+    fi
+}
+
+function usage() {
+    cat <<'USAGE'
+Verwendung: sysinfo.sh [--extras|--monitor] [--help]
+
+  --extras, --monitor   Führe kompakte Monitoring-Funktionen aus (mem/cpu/connections/open files).
+  --help                Zeigt diese Hilfe.
+
+Hinweis: Aliase werden nur definiert, wenn das Skript gesourced oder interaktiv ausgeführt wird.
+USAGE
+}
+
+function handle_extras() {
+    section "MONITORING - Extras"
+    mem_hogs
+    echo ""
+    cpu_hogs
+    echo ""
+    conn_summary
+    echo ""
+    open_files
+}
+
+# ---- CLI-Argumente verarbeiten
+MODE=""
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --extras|--monitor) MODE=extras; shift ;;
+        --help|-h) usage; exit 0 ;;
+        *) echo "Unbekannte Option: $1"; usage; exit 1 ;;
+    esac
+done
+
+if [ "$MODE" = "extras" ]; then
+    exec > >(tee -a "$OUT") 2>&1
+    handle_extras
+    echo ""
+    echo "✓ Extras-Bericht abgeschlossen — gespeichert unter: $OUT"
+    exit 0
+fi
 
 # Leitet alle Ausgaben in Datei und Terminal um
 exec > >(tee -a "$OUT") 2>&1
