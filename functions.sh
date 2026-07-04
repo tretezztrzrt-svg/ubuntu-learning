@@ -160,3 +160,77 @@ function pack-harder() {
   # Kompression maximal
   7z a -t7z -mx=9 "$ziel" "$quelle"
 }
+# --- backup -------------------------------------------------------------------
+# Legt ein Backup unter $HOME/backup an und unterscheidet zwischen
+#   - Ordnern: ~/backup/dir/<TIMESTAMP>_<TARGETNAME>.tar.gz
+#   - Dateien: ~/backup/file/<TIMESTAMP>_<TARGETNAME>
+# Logfile:
+#   - liegt unter ~/backup/
+#   - Name: <YYYY-MM-DD>_func_.log
+#
+# Nutzung:
+#   backup <pfad/zur/datei_oder_ordner>
+function backup() {
+  # erwartete Parameterzahl
+  # Ziel prüfen & sammeln
+  local target backup_dir log_file target_name timestamp date_day backup_name
+  backup_dir="$HOME/backup"
+
+  # Argument prüfen
+  if [[ $# -ne 1 ]]; then
+    echo "Fehler: Bitte gib eine Datei oder ein Verzeichnis an!" >&2
+    return 1
+  fi
+
+  target="$1"
+
+  # Existenz prüfen (Datei oder Ordner)
+  if [[ ! -e "$target" ]]; then
+    echo "Fehler: '$target' existiert nicht oder ist ungültig!" >&2
+    return 2
+  fi
+
+  # Zielordner anlegen (falls nicht vorhanden)
+  mkdir -p -- "$backup_dir" "$backup_dir/dir" "$backup_dir/file"
+
+  # Basis-Namen/Zeiten
+  target_name="$(basename -- "$target")"
+  timestamp="$(date +"%Y-%m-%d_%H-%M-%S")"
+  date_day="$(date +"%Y-%m-%d")"
+
+  # Backup-Name: Timestamp soll vor dem gesicherten Ziel stehen
+  backup_name="${timestamp}_${target_name}"
+
+  # Logfile: im Backup-Ordner, Kennung "_func_"
+  log_file="${backup_dir}/${date_day}_func_.log"
+
+  # Alles protokollieren (inkl. Ausgabe von Fehlern)
+  {
+    echo "=== Backup-Start: $(date) ==="
+    echo "Zielobjekt: $target"
+    echo "Backup-Name: $backup_name"
+
+    # Datei oder Verzeichnis: unterschiedlich sichern
+    if [[ -d "$target" ]]; then
+      echo "Typ: Verzeichnis"
+
+      # Verzeichnis komprimieren:
+      # -C auf den Parent setzen
+      # - nur den Ordnernamen ins Archiv aufnehmen
+      tar -czf "${backup_dir}/dir/${backup_name}.tar.gz" \
+        -C "$(dirname -- "$target")" "$target_name"
+
+      echo "Erfolgreich als ${backup_name}.tar.gz gesichert."
+    else
+      echo "Typ: Datei"
+
+      # Datei kopieren in file/ mit Backupnamen
+      cp -- "$target" "${backup_dir}/file/${backup_name}"
+
+      echo "Erfolgreich als ${backup_name} gesichert."
+    fi
+
+    echo "=== Backup-Ende: $(date) ==="
+    echo
+  } >> "$log_file" 2>&1
+}
