@@ -3,7 +3,7 @@
   alias home='cd /home/alex/' # Wechselt in das Home-Verzeichnis von Alex
   alias vera='cd /media/veracrypt1/' # Wechselt in den VeraCrypt-Mountpoint
   
-  # bevor back()
+  # bevor back() func
   alias dvd='cd .. && ls -la' # Eine Ebene höher navigieren mit automatischer Auflistung
   alias cd2='cd .. && ls -la' # Fängt fehlendes Leerzeichen ab und listet Inhalt auf
   
@@ -59,6 +59,7 @@ alias vdir='vdir --color=auto' # Aktiviert Farben für vdir
 alias l='ls -la --color=auto' # Standard-Spalten-Auflistung für schnelle Orientierung
 alias sl='ls -la --color=auto' # Korrigiert Dreher bei 'ls'
 alias ls='ls -la --color=auto' # Aktiviert Farben für ls
+alias sl="ls -la --color=auto"               # Vertippt von ls zu sl
 
 # Info-Modus-an
 alias cp='cp -i' # Interaktives Kopieren (Schutz vor Überschreiben)
@@ -67,7 +68,6 @@ alias mv='mv -i' # Interaktives Verschieben (Schutz vor Überschreiben)
 alias move='mv -i' # Fragt vor dem Überschreiben beim Verschieben nach
 alias rm='rm -i' # Fragt vor jedem Löschen um Bestätigung
 alias remove='rm -i' # Fragt vor dem Löschen nach
-
 
 # Misc -------------------------------------------------------------------
 alias warum='echo "Weil du der Admin bist. Atme tief durch."' # Trost bei Frust
@@ -78,12 +78,14 @@ alias rabbithole='cmatrix -b' # Matrix-Effekt im Terminal (erfordert cmatrix) # 
 
 # Root Fehler Korrektur
 alias bitte="sudo \$(history -p !!)"
+# function please()
 alias pls="sudo \$(fc -ln -1)"
+# function fuck()
 
 # history
 alias hg="history | grep"
 alias ao-history-grep="history | grep"
-# profile-me func!
+# profile-me func() is fun
 
 # Wichtige Shortcuts
 alias ao-help_me="echo 'man'"
@@ -92,10 +94,7 @@ alias ao-what_is="echo 'whatis'"
 alias ao-describe="echo 'apropos'"
 alias ao-tldr= 'echo "tldr.appinabrowsser"'
 
-
-# Typo Korrektionen
-alias sl="ls"               # Vertippt von ls zu sl
 # Uhrzeit & Datum
 alias ao-date_now="date '+%Y-%m-%d %H:%M:%S'"
 # Schleifen Sammlung
-# while true; do clear; ls -la; sleep 1; done # macht es so lange bis unendlich
+alias ao-schleife='cho "while true; do clear; ls -la; sleep 1; done"' # macht es so lange bis unendlich
