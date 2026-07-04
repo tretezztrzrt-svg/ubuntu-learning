@@ -350,6 +350,7 @@ function bigfiles() {
   du -ah "$@" 2>/dev/null | sort -rh | head -n 10
 }
 
+# sudo apt install ncdu -> soll wohl wie treeSize sein
 # --- HISTORY & PROFILING -------------------------------------------------------
 
 # Zeigt die häufigsten Shell-Befehle
