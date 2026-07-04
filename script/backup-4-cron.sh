@@ -6,8 +6,9 @@
 # 42 * * * * bash /home/alex/backup/backup-n-cron.sh /home/alex/.bash_function
 # 42 * * * * bash /home/alex/backup/backup-n-cron.sh /home/alex/.bash_history
 # 42 * * * * bash /home/alex/backup/backup-n-cron.sh /home/alex/.bashrc
-# lesen: sudo crontab -e 
-# check: sudo crontab -l
+# lesen: crontab -e 
+# check: crontab -l
+# nicht unbedingt sudo - das kann zu zugriffsproblemen führen, wenn der cronjob als root läuft und auf benutzerdateien zugreifen möchte.  
 #
 #!/usr/bin/env bash
 set -euo pipefail

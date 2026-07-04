@@ -25,7 +25,7 @@ EOF
 
 cat > LICENSE <<EOF
 Just Use Ubuntu License 
-Copyright (c) 2026 user:omen
+Copyright (c) 2026 user:users
 
 Permission is granted to use, copy, modify, merge, publish, distribute, and/or sell this software, under the following extremely reasonable conditions:
 
@@ -35,11 +35,13 @@ Permission is granted to use, copy, modify, merge, publish, distribute, and/or s
     If you break something, that’s on you.  
     The authors are not responsible for melted kernels, existential shell crises, or switching to Arch at 3 AM.
 
-    You may fork this project, but dramatic changelogs like “rewrote everything in Rust” must be accompanied by snacks.
+    You may fork this project, but dramatic changelogs like “rewrote everything in Rust” must be accompanied by a ton of snacks.
 
     No warranty whatsoever.  
-    The software is provided “as is”, “as seen”, and occasionally “as cursed”.
-    Use at your own risk, joy, or confusion.
+    The software is provided “as is”, “as seen”, and occasionally “as cursed by ai”. Use at your own risk, joy, or confusion.
+
+    No harming or using of androids, cyborgs and/or robos that become terminator, robocop, johnny 5, bender, wall-e, 
+    or emet from one piece in the future (even when they are from the past)!
 
 By using this software, you agree that life is too short for bloated ASCII logos and that clean output is a human right.
 EOF
