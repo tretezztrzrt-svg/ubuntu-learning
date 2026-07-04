@@ -198,6 +198,23 @@ get_disk() {
     disk="${disk_used} / ${disk_total} (${disk_perc})"
 }
 
+get_swap() {
+    if [[ -f /proc/swaps ]]; then
+        swap_total_kb="$(awk 'NR>1 {sum+=$3} END {print sum+0}' /proc/swaps)"
+        swap_used_kb="$(awk 'NR>1 {sum+=$4} END {print sum+0}' /proc/swaps)"
+        if [[ -n "$swap_total_kb" && "$swap_total_kb" -gt 0 ]]; then
+            swap_used_mb="$((swap_used_kb / 1024))"
+            swap_total_mb="$((swap_total_kb / 1024))"
+            swap_perc="$((swap_used_kb * 100 / swap_total_kb))"
+            swap="${swap_used_mb}MiB / ${swap_total_mb}MiB (${swap_perc}%)"
+        else
+            swap="n/a"
+        fi
+    else
+        swap="n/a"
+    fi
+}
+
 get_local_ip() {
     iface="$(ip route | awk '/default/ {print $5; exit}')"
     if [[ -n "$iface" ]]; then
@@ -205,6 +222,60 @@ get_local_ip() {
         ip_addr="${ip_addr%/*}"
     fi
     [[ -z "$ip_addr" ]] && ip_addr="n/a"
+}
+
+get_external_ip() {
+    if has_cmd curl; then
+        ext_ip="$(curl -fsSL --max-time 5 https://api.ipify.org 2>/dev/null || true)"
+        isp="$(curl -fsSL --max-time 5 https://ipinfo.io/org 2>/dev/null | tr -d '\n' || true)"
+    fi
+    [[ -z "$ext_ip" ]] && ext_ip="n/a"
+    [[ -z "$isp" ]] && isp="n/a"
+}
+
+get_gateway() {
+    gateway="$(ip route | awk '/default/ {print $3; exit}')"
+    [[ -z "$gateway" ]] && gateway="n/a"
+}
+
+get_dns() {
+    dns_servers=()
+    while IFS= read -r ns; do
+        [[ "$ns" =~ ^nameserver[[:space:]]+(.+) ]] && dns_servers+=("${BASH_REMATCH[1]}")
+    done < /etc/resolv.conf 2>/dev/null
+
+    if ((${#dns_servers[@]} > 0)); then
+        dns="$(IFS=', '; echo "${dns_servers[*]}")"
+    else
+        dns="n/a"
+    fi
+}
+
+get_mac() {
+    iface="$(ip route | awk '/default/ {print $5; exit}')"
+    if [[ -n "$iface" ]]; then
+        mac_addr="$(cat "/sys/class/net/$iface/address" 2>/dev/null)"
+    fi
+    [[ -z "$mac_addr" ]] && mac_addr="$(ip -o link show 2>/dev/null | awk '/link\/ether/ {print $17; exit}')"
+    [[ -z "$mac_addr" ]] && mac_addr="n/a"
+}
+
+get_wifi_ssid() {
+    if has_cmd iwgetid; then
+        wifi_ssid="$(iwgetid -r 2>/dev/null)"
+    elif has_cmd nmcli; then
+        wifi_ssid="$(nmcli -t -f active,ssid dev wifi 2>/dev/null | awk -F: '$1=="yes" {print $2; exit}')"
+    fi
+    [[ -z "$wifi_ssid" ]] && wifi_ssid="n/a"
+}
+
+get_ufw() {
+    if has_cmd ufw; then
+        ufw_status="$(ufw status 2>/dev/null | awk '/^Status:/ {print $2; exit}')"
+        [[ -z "$ufw_status" ]] && ufw_status="inactive"
+    else
+        ufw_status="n/a"
+    fi
 }
 
 # ---------- ASCII-Logo (Ubuntu) – hier kann später ein Logo in Ubuntu-Farben eingefügt werden ----------
@@ -230,7 +301,14 @@ main() {
     get_gpu
     get_memory
     get_disk
+    get_swap
     get_local_ip
+    get_external_ip
+    get_gateway
+    get_dns
+    get_mac
+    get_wifi_ssid
+    get_ufw
 
     # Ausgabe
     echo -e "${title_col}${bold}$(hostname) System Information${reset}"
@@ -258,8 +336,16 @@ main() {
         ["CPU"]="$cpu"
         ["GPU"]="$gpu"
         ["Memory"]="$memory"
+        ["Swap"]="$swap"
         ["Disk (/)"]="$disk"
         ["Local IP"]="$ip_addr"
+        ["External IP"]="$ext_ip"
+        ["ISP"]="$isp"
+        ["Gateway"]="$gateway"
+        ["DNS"]="$dns"
+        ["MAC"]="$mac_addr"
+        ["WiFi SSID"]="$wifi_ssid"
+        ["UFW"]="$ufw_status"
     )
 
     for key in "${!info_lines[@]}"; do
@@ -268,7 +354,7 @@ main() {
     done
     col_width="$((max_len + 2))"
 
-    for key in "OS" "Host" "Kernel" "Uptime" "Packages" "Shell" "Resolution" "DE" "WM" "Theme" "Icons" "Terminal" "CPU" "GPU" "Memory" "Disk (/)" "Local IP"; do
+    for key in "OS" "Host" "Kernel" "Uptime" "Packages" "Shell" "Resolution" "DE" "WM" "Theme" "Icons" "Terminal" "CPU" "GPU" "Memory" "Swap" "Disk (/)" "Local IP" "External IP" "ISP" "Gateway" "DNS" "MAC" "WiFi SSID" "UFW"; do
         value="${info_lines[$key]}"
         value="$(trim "$value")"
         printf "${sub_col}%-${col_width}s${colon_col}:${info_col} %s${reset}\n" "$key" "$value"
