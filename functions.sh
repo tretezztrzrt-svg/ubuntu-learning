@@ -39,7 +39,7 @@ function back() {
 
 # Erstellt einen Ordner (mkdir -p) und wechselt sofort hinein (cd).
 # Erwartet: 1 Argument = Ordnername/-pfad
-function make-dir) {  # <-- ACHTUNG: Syntaxfehler: fehlendes ")" in der Funktionsdefinition
+function make-dir {  
   if [ -z "$1" ]; then
     echo "Verwendung: mkdircd <ordnername>"
     return 1
