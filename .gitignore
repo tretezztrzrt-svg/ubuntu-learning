@@ -13,3 +13,8 @@
 Thumbs.db
 .vscode/
 .idea/
+# Sensible Dateien (die man besser nicht committed)
+.env
+.secrets
+*.pem
+*.key
