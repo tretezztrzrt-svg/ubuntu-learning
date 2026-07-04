@@ -283,7 +283,7 @@ function fuck() {
   fi
 }
 
-# Beendet Prozesse mit kill -9
+# Tötet Prozesse mit kill -9.
 # Nutzung: killforce <PID1> [PID2 ...]
 function killforce() {
   if [ $# -eq 0 ]; then
@@ -291,6 +291,43 @@ function killforce() {
     return 1
   fi
   kill -9 "$@"
+}
+
+# Zeigt sinnvolle Kandidaten für ein Kill an.
+# Nutzung: who-to-kill
+function who-to-kill() {
+  local current_uid
+  current_uid="$(id -u)"
+
+  echo "Top 10 RAM-Verbraucher:"
+  ps -eo pid=,comm=,%mem=,uid= --sort=-%mem | \
+    awk -v uid="$current_uid" 'NR > 1 && $4 == uid && $2 !~ /^(kthreadd|kworker|ksoftirqd|pool_workqueue|rcu_|migration|mm_percpu_wq|cpuhp|watchdog|irq|khelper|khungtaskd|kswapd|oom_reaper|kcompactd|khugepaged|kintegrityd|kblockd|md|scsi_eh|jbd2|ext4|xfs|dm|loop|blk|kthreadd)$/ {print}' | \
+    head -n 10 | \
+    awk '{printf "%2d. PID %-7s %-20s %s%% RAM\n", NR, $1, $2, $3}'
+  local top_ram_line
+  top_ram_line="$(ps -eo pid=,comm=,%mem=,uid= --sort=-%mem | awk -v uid="$current_uid" 'NR > 1 && $4 == uid && $2 !~ /^(kthreadd|kworker|ksoftirqd|pool_workqueue|rcu_|migration|mm_percpu_wq|cpuhp|watchdog|irq|khelper|khungtaskd|kswapd|oom_reaper|kcompactd|khugepaged|kintegrityd|kblockd|md|scsi_eh|jbd2|ext4|xfs|dm|loop|blk|kthreadd)$/ {print; exit}' | awk '{printf "%s %s %s", $1, $2, $3}')"
+  if [ -n "$top_ram_line" ]; then
+    read -r ram_pid ram_name ram_value <<< "$top_ram_line"
+    echo "Spitzenwert: PID $ram_pid ($ram_name) mit $ram_value% RAM"
+  else
+    echo "Spitzenwert: Keine passenden Nutzerprozesse gefunden"
+  fi
+
+  echo
+  echo "Top 10 CPU-Verbraucher:"
+  ps -eo pid=,comm=,%cpu=,uid= --sort=-%cpu | \
+    awk -v uid="$current_uid" 'NR > 1 && $4 == uid && $2 !~ /^(kthreadd|kworker|ksoftirqd|pool_workqueue|rcu_|migration|mm_percpu_wq|cpuhp|watchdog|irq|khelper|khungtaskd|kswapd|oom_reaper|kcompactd|khugepaged|kintegrityd|kblockd|md|scsi_eh|jbd2|ext4|xfs|dm|loop|blk|kthreadd)$/ {print}' | \
+    head -n 10 | \
+    awk '{printf "%2d. PID %-7s %-20s %s%% CPU\n", NR, $1, $2, $3}'
+  local top_cpu_line
+  top_cpu_line="$(ps -eo pid=,comm=,%cpu=,uid= --sort=-%cpu | awk -v uid="$current_uid" 'NR > 1 && $4 == uid && $2 !~ /^(kthreadd|kworker|ksoftirqd|pool_workqueue|rcu_|migration|mm_percpu_wq|cpuhp|watchdog|irq|khelper|khungtaskd|kswapd|oom_reaper|kcompactd|khugepaged|kintegrityd|kblockd|md|scsi_eh|jbd2|ext4|xfs|dm|loop|blk|kthreadd)$/ {print; exit}' | awk '{printf "%s %s %s", $1, $2, $3}')"
+  if [ -n "$top_cpu_line" ]; then
+    read -r cpu_pid cpu_name cpu_value <<< "$top_cpu_line"
+    echo "Spitzenwert: PID $cpu_pid ($cpu_name) mit $cpu_value% CPU"
+  else
+    echo "Spitzenwert: Keine passenden Nutzerprozesse gefunden"
+  fi
+
 }
 
 # --- DISK SPACE & FILE ANALYSIS -----------------------------------------------
