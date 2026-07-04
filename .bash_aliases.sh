@@ -76,12 +76,14 @@ alias why='echo "Weil du der Admin bist. Atme tief durch und prüfe die Logs."' 
 alias matrix='cmatrix -b' # Aktiviert den Matrix-Bildschirmschoner im Terminal # ubuntu-proofed
 alias rabbithole='cmatrix -b' # Matrix-Effekt im Terminal (erfordert cmatrix) # ubuntu-proofed
 
-alias pls='please [!!]' #to be proofed
-alias bitte='fuck' # sollte gehen
+# Root Fehler Korrektur
+alias bitte="sudo \$(history -p !!)"
+alias pls="sudo \$(fc -ln -1)"
 
+# history
 alias hg="history | grep"
 alias ao-history-grep="history | grep"
-# profile-me fun!
+# profile-me func!
 
 # Wichtige Shortcuts
 alias ao-help_me="echo 'man'"
@@ -90,6 +92,9 @@ alias ao-what_is="echo 'whatis'"
 alias ao-describe="echo 'apropos'"
 alias ao-tldr= 'echo "tldr.appinabrowsser"'
 
+
+# Typo Korrektionen
+alias sl="ls"               # Vertippt von ls zu sl
 # Uhrzeit & Datum
 alias ao-date_now="date '+%Y-%m-%d %H:%M:%S'"
 # Schleifen Sammlung
