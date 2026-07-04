@@ -13,6 +13,9 @@
   alias etc='cd /etc/' # Wechselt in das Systemkonfigurations-Verzeichnis
   
   alias install-common='sudo apt install cmatrix micro less mc btop p7zip-full brasero make git meld curl net-tools hwinfo gedit'
+  # try dis out sudo apt install cockpit
+  alias cockpit-install='sudo apt install cockpit'
+  
 # ---------------------------------------------------------
 # paar kurzepumpgun action --------------------------------
 alias c='clear' # Terminal leeren
