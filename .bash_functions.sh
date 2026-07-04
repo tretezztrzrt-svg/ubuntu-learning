@@ -362,3 +362,95 @@ function profile_me() {
   local lines=${1:-10}
   history | awk '{print $2}' | sort | uniq -c | sort -rn | head -n "$lines"
 }
+
+
+
+
+
+
+
+
+
+
+function projektname() {
+    local PROJECT_NAME="$1"
+    
+    # Farbdefinitionen
+    local GREEN='\033[0;32m'
+    local YELLOW='\033[1;33m'
+    local RED='\033[0;31m'
+    local NC='\033[0m'
+    
+    # Validierung
+    if [ -z "$PROJECT_NAME" ]; then
+        echo -e "${RED}❌ Fehler: Projektname erforderlich${NC}"
+        echo "Verwendung: create-project <projektname>"
+        return 1
+    fi
+    
+    # Prüfe ob Verzeichnis bereits existiert
+    if [ -d "$PROJECT_NAME" ]; then
+        echo -e "${RED}❌ Fehler: Verzeichnis '$PROJECT_NAME' existiert bereits${NC}"
+        return 1
+    fi
+    
+    # Erstelle Projektverzeichnis
+    mkdir -p "$PROJECT_NAME" || {
+        echo -e "${RED}❌ Fehler: Konnte Verzeichnis '$PROJECT_NAME' nicht erstellen${NC}"
+        return 1
+    }
+    
+    cd "$PROJECT_NAME" || return 1
+    
+    # Erstelle README.md
+    cat > README.md <<EOF
+# $PROJECT_NAME
+
+Beschreibung folgt.
+EOF
+
+    # Erstelle LICENSE
+    cat > LICENSE <<EOF
+Just Use Ubuntu License 
+Copyright (c) 2026 user:users
+
+Permission is granted to use, copy, modify, merge, publish, distribute, and/or sell this software, under the following extremely reasonable conditions:
+
+    You acknowledge that Ubuntu is perfectly fine.  
+    You don't have to use it, but pretending it's bad is strictly prohibited.
+
+    If you break something, that's on you.  
+    The authors are not responsible for melted kernels, existential shell crises, or switching to Arch at 3 AM.
+
+    You may fork this project, but dramatic changelogs like "rewrote everything in Rust" must be accompanied by a ton of snacks.
+
+    No warranty whatsoever.  
+    The software is provided "as is", "as seen", and occasionally "as cursed by ai". Use at your own risk, joy, or confusion.
+
+    No harming or using of androids, cyborgs and/or robos that become terminator, robocop, johnny 5, bender, wall-e, 
+    or emet from one piece in the future (even when they are from the past)!
+
+By using this software, you agree that life is too short for bloated ASCII logos and that clean output is a human right.
+EOF
+
+    # Erstelle Hauptskript
+    cat > "${PROJECT_NAME}.sh" <<EOF
+#!/usr/bin/env bash
+# Skript für $PROJECT_NAME
+echo "Hallo von $PROJECT_NAME"
+EOF
+    
+    chmod +x "${PROJECT_NAME}.sh" || {
+        echo -e "${RED}❌ Fehler: Konnte Skript nicht ausführbar machen${NC}"
+        return 1
+    }
+    
+    # Erfolgsmeldung
+    echo -e "${GREEN}✅ Projekt '$PROJECT_NAME' wurde angelegt.${NC}"
+    echo -e "${YELLOW}📂 Wechsle in das Verzeichnis: cd $PROJECT_NAME${NC}"
+    
+    return 0
+}
+
+# Exportiere die Funktion
+export -f create-project
