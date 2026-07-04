@@ -46,6 +46,7 @@ alias killforce='kill -9' # Beendet einen Prozess sofort und unnachgiebig (SIGKI
 alias exorzist='kill -9' # Sendet das Standard-Beendigungssignal an eine PID (SIGTERM) -> Hinweis: Nutzt SIGKILL (-9)
 alias psaux='ps -aux' # Zeigt alle laufenden Prozesse im System an
 alias psax='ps -aux' # Zeigt alle laufenden Prozesse im System an
+
 # btop, btop, btop everything is btop!!!!!!
 # sudo apt install glances -> try it
 alias top='btop'
@@ -77,6 +78,7 @@ alias why='echo "Weil du der Admin bist. Atme tief durch und prüfe die Logs."' 
 
 alias matrix='cmatrix -b' # Aktiviert den Matrix-Bildschirmschoner im Terminal # ubuntu-proofed
 alias rabbithole='cmatrix -b' # Matrix-Effekt im Terminal (erfordert cmatrix) # ubuntu-proofed
+# sudo apt install nnn ranger -> nnn oder ranger sollen wohl wie mc nur moderner sein
 
 # Root Fehler Korrektur
 alias bitte="sudo \$(history -p !!)"
