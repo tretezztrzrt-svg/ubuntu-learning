@@ -25,7 +25,7 @@ Let's be real – `nano` is from 1999. It's old, it's clunky, and the shortcuts 
 
 ```bash
 sudo apt install micro   # Ubuntu/Debian
-
+```
 
 ## `mc` (Midnight Commander) – The File Manager That Saves Your Sanity
 
@@ -50,3 +50,4 @@ Typing `ls`, `cd`, `cp`, `mv`, `rm` over and over gets old fast. `mc` gives you 
 
 ```bash
 sudo apt install mc   # Ubuntu/Debian
+```
