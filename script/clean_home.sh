@@ -32,6 +32,6 @@ for dir in */; do
 done
 
 
+cp -f -- "/home/$USER/ubuntu-learning/my-bash/.bash_aliases.sh" "$HOME/.bash_aliases"
+cp -f -- "/home/$USER/ubuntu-learning/my-bash/.bash_functions.sh" "$HOME/.bash_functions"
 
-cp -f -- /home/ubuntu/ubuntu-learning/my-bash/.bash_aliases.sh ~/.bash_aliases
-cp -f -- /home/ubuntu/ubuntu-learning/my-bash/.bash_aliases.sh ~/.bash_aliases
