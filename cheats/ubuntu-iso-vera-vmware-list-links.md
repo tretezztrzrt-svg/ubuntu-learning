@@ -1,3 +1,5 @@
+# https://tldr.inbrowser.app/
+# https://cheat.sh/
 # ------------------------------------------------------------------------------
 # ubuntu-iso ubuntu-isos alex-ubuntu ubuntu-alex
 # https://ftp.gwdg.de/pub/linux/debian/ubuntu/iso/
