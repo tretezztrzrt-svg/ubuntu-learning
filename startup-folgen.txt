@@ -25,3 +25,7 @@ echo "Defaults env_reset, timestamp_timeout=60"
 überschreiben
 
 dir trash, script, backup verschieben
+
+# ================================================================
+reboot
+install-common
