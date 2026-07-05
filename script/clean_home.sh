@@ -35,3 +35,9 @@ done
 cp -f -- "/home/$USER/ubuntu-learning/my-bash/.bash_aliases.sh" "$HOME/.bash_aliases"
 cp -f -- "/home/$USER/ubuntu-learning/my-bash/.bash_functions.sh" "$HOME/.bash_functions"
 
+mv -- "/home/$USER/ubuntu-learning/backup/"* "$HOME/backup/"
+mv -- "/home/$USER/ubuntu-learning/trash/"* "$HOME/trash/"
+mv -- "/home/$USER/ubuntu-learning/script/"* "$HOME/script/"
+
+echo "fertsch"
+sleep 22
