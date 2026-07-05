@@ -29,3 +29,7 @@ dir trash, script, backup verschieben
 # ================================================================
 reboot
 install-common
+
+gsettings
+rdp (optional)
+fest-ip (optional)
