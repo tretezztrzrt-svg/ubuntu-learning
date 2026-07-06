@@ -1,5 +1,6 @@
 # === SYSTEM DESTRUCTION SPEEDRUN v2.0 (Chirurgie pur) === hehehehehehhee
 # Gemessen mit der internen Bash-Variable $SECONDS (Sekunden).
+# holy shit, delete about 200mb smart in 8 seconds, can see how step after step ubuntu desktop just melts :D
 
 echo "=== SPEEDRUN START ==="
 SECONDS=0
