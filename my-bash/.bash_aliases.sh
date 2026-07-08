@@ -1,9 +1,11 @@
 # paar kurzepumpgun action --------------------------------
+
 alias c='clear' # Terminal leeren
 alias q='exit' # Beendet das Terminal mit einem Buchstaben
 alias h='history' # Zeigt die Befehlshistorie an
 alias x='chmod +x' # Macht eine Skriptdatei schnell ausführbar
 alias reboot='shutdown -r now' # System sofort neu starten
+
 # meins---------------------------------------------------
   alias alex='cd /home/alex/' # Wechselt in das Verzeichnis von Benutzer Alex
   alias home='cd /home/alex/' # Wechselt in das Home-Verzeichnis von Alex
@@ -20,8 +22,9 @@ alias reboot='shutdown -r now' # System sofort neu starten
   
   alias install-common='sudo apt install cmatrix micro less mc btop p7zip-full make git meld curl remmina'
   alias install-special='sudo apt install brasero net-tools hwinfo gedit'
-  
 # ---------------------------------------------------------
+
+
 # try dis out sudo apt install cockpit
 alias cockpit-install='sudo apt install cockpit'
 # help
