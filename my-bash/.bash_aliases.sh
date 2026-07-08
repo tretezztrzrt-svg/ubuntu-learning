@@ -18,7 +18,9 @@ alias reboot='shutdown -r now' # System sofort neu starten
   alias logs='cd /var/log/' # Wechselt in das Verzeichnis für variable Daten (Logs etc.)
   alias etc='cd /etc/' # Wechselt in das Systemkonfigurations-Verzeichnis
   
-  alias install-common='sudo apt install cmatrix micro less mc btop p7zip-full brasero make git meld curl net-tools hwinfo gedit'
+  alias install-common='sudo apt install cmatrix micro less mc btop p7zip-full make git meld curl remmina'
+  alias install-special='sudo apt install brasero net-tools hwinfo gedit'
+  
 # ---------------------------------------------------------
 # try dis out sudo apt install cockpit
 alias cockpit-install='sudo apt install cockpit'
