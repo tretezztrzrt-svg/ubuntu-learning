@@ -48,10 +48,12 @@ reboot
 install-common # my pack of apts
 # gsettings
 # rdp (optional)
+# bei remmina gibt es configs anzupassen!, bei mstsc nicht
 # fest-ip (optional)
 # ================================================================
 echo "https://launchpad.net/veracrypt/trunk/1.26.29/+download/veracrypt-1.26.29-Ubuntu-26.04-amd64.deb"
 wget "https://launchpad.net/veracrypt/trunk/1.26.29/+download/veracrypt-1.26.29-Ubuntu-26.04-amd64.deb"
-
+# sudo apt install build-essentials
+# für vmware
 echo "https://archive.org/download/vmware-workstation-pro-full-26h1-25388281.x86_64/VMware-Workstation-Full-26H1-25388281.x86_64.bundle"
 wget "https://archive.org/download/vmware-workstation-pro-full-26h1-25388281.x86_64/VMware-Workstation-Full-26H1-25388281.x86_64.bundle"
