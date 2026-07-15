@@ -13,7 +13,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BACKUP_DIR="/home/alex/backup"
+ BACKUP_DIR="/home/${USER}/backup" # ein wenig universeller
+# BACKUP_DIR="/home/alex/backup"
 mkdir -p "$BACKUP_DIR" "$BACKUP_DIR/dir" "$BACKUP_DIR/file"
 
 if [[ $# -ne 1 ]]; then
