@@ -23,14 +23,16 @@ function port_scan_simple() {
 }
 
 # Get external IP address
-function myextip() {
+function external_ip() {
     echo "External IP Addresses:"
-    echo -n "  Via ifconfig.me: "; curl -s ifconfig.me 2>/dev/null || echo "Failed"
-    echo -n "  Via icanhazip.com: "; curl -s icanhazip.com 2>/dev/null || echo "Failed"
-    echo -n "  Via ipify.org: "; curl -s api.ipify.org 2>/dev/null || echo "Failed"
+    echo -n "  Via ifconfig.me: "; curl -s -m 3 ifconfig.me 2>/dev/null || echo "Failed"
 }
 
 # Wi-Fi connection info
 function wifi_info() {
+    if ! command -v nmcli &>/dev/null; then
+        echo "❌ nmcli not found (NetworkManager not installed, common on servers)"
+        return 1
+    fi
     nmcli -g ACTIVE,SSID,SIGNAL device wifi | head -10
 }
