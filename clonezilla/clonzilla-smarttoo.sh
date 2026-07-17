@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# CLONEZILLA SMART BACKUP & RECOVERY SCRIPT v3.2 (Streamlined)
+# CLONEZILLA SMART BACKUP & RECOVERY SCRIPT v3.4 (Partition Edition)
 # =================================================================
 DEFAULT_COMPRESSION="zstd"
 DEFAULT_SPLIT_SIZE="4000"
@@ -8,12 +8,32 @@ DEFAULT_BACKUP_DIR="/home/partimag"
 MIN_PASSWORD_LENGTH=8
 
 # =================================================================
+# ENFORCE ROOT RIGHTS
+# =================================================================
+if [ "$EUID" -ne 0 ]; then
+    echo "❌ FEHLER: Dieses Skript muss als root (mit sudo) ausgeführt werden!"
+    exit 1
+fi
+
+# =================================================================
+# AUTOMATIC CLEANUP ON EXIT
+# =================================================================
+cleanup() {
+    echo -e "\n🧹 Skript beendet. Räume auf..."
+    if mountpoint -q "$DEFAULT_BACKUP_DIR"; then
+        echo "🔓 Unmounte $DEFAULT_BACKUP_DIR..."
+        umount "$DEFAULT_BACKUP_DIR" 2>/dev/null
+    fi
+}
+trap cleanup EXIT SIGINT SIGTERM
+
+# =================================================================
 # HILFSFUNKTIONEN & FALLENABWEHR
 # =================================================================
 clear_screen() {
     clear
     echo -e " ============================================================ "
-    echo -e "       CLONEZILLA SMART BACKUP & RECOVERY TOOL v3.2 "
+    echo -e "   CLONEZILLA SMART PARTITION BACKUP & RECOVERY TOOL v3.4 "
     echo -e " ============================================================ "
 }
 
@@ -53,10 +73,6 @@ find_removable_partition() {
     fi
 }
 
-find_internal() {
-    lsblk -dn -o NAME,RM,SIZE,TYPE | awk '$2==0 && $4=="disk" {print $1, $3}' | sort -k2 -h | tail -1 | awk '{print $1}'
-}
-
 is_system_critical() {
     local TARGET_DEV="/dev/$1"
     local MOUNTS=$(lsblk -no MOUNTPOINT "$TARGET_DEV" 2>/dev/null)
@@ -70,8 +86,8 @@ is_system_critical() {
 # HAUPTMENÜ
 # =================================================================
 clear_screen
-echo " 1) Backup erstellen (savedisk)"
-echo " 2) Backup wiederherstellen (restoredisk)"
+echo " 1) Partition sichern (saveparts)"
+echo " 2) Partition wiederherstellen (restoreparts)"
 echo " 0) Beenden"
 read -p "Wahl [0-2]: " MODE_CHOICE
 
@@ -106,12 +122,6 @@ if [ ! -b "/dev/$BACKUP_PART" ]; then
     exit 1
 fi
 
-if [[ "$BACKUP_PART" =~ p[0-9]+$ ]]; then
-    BACKUP_DISK_BASE=$(echo "$BACKUP_PART" | sed 's/p[0-9]*$//')
-else
-    BACKUP_DISK_BASE=$(echo "$BACKUP_PART" | sed 's/[0-9]*$//')
-fi
-
 mkdir -p "$DEFAULT_BACKUP_DIR" 2>/dev/null
 if ! mountpoint -q "$DEFAULT_BACKUP_DIR"; then
     mount "/dev/$BACKUP_PART" "$DEFAULT_BACKUP_DIR" 2>/dev/null || {
@@ -130,7 +140,7 @@ read -p "[ENTER] zum Fortfahren..."
 # =================================================================
 clear_screen
 echo "--- Schritt 2: Name des Backup-Ordners ---"
-SUGGESTED_NAME="backup-$(date +%Y-%m-%d-%H%M)"
+SUGGESTED_NAME="parts-backup-$(date +%Y-%m-%d-%H%M)"
 read -p "Backup-Name [$SUGGESTED_NAME]: " BACKUP_NAME
 BACKUP_NAME="${BACKUP_NAME:-$SUGGESTED_NAME}"
 
@@ -147,52 +157,46 @@ if [ "$MODE" = "restore" ] && [ ! -d "$DEFAULT_BACKUP_DIR/$BACKUP_NAME" ]; then
 fi
 
 # =================================================================
-# STEP 3: Quelle oder Ziel-Festplatte wählen
+# STEP 3: Quelle oder Ziel-Partition wählen
 # =================================================================
 clear_screen
 show_disks
 echo ""
 
-SUGGESTED_INTERNAL=$(find_internal)
-
 if [ "$MODE" = "backup" ]; then
-    echo "📤 --- MODUS: BACKUP ERSTELLEN ---"
-    if [ -n "$SUGGESTED_INTERNAL" ]; then
-        echo -e " 💡 Vorschlag (Größte interne Platte): $SUGGESTED_INTERNAL"
-        read -p "Quell-Festplatte (gesamte Disk) [$SUGGESTED_INTERNAL]: " CHOSEN_DISK
-        CHOSEN_DISK="${CHOSEN_DISK:-$SUGGESTED_INTERNAL}"
-    else
-        read -p "Quell-Festplatte eingeben: " CHOSEN_DISK
-    fi
+    echo "📤 --- MODUS: PARTITION SICHERN ---"
+    read -p "Quell-Partition eingeben (z.B. sda1 oder nvme0n1p2): " CHOSEN_PART
 else
-    echo "📥 --- MODUS: WIEDERHERSTELLUNG ---"
-    if [ -n "$SUGGESTED_INTERNAL" ]; then
-        echo -e " 💡 Vorschlag (Ziel-Platte): $SUGGESTED_INTERNAL"
-        read -p "ZIEL-Festplatte (WIRD KOMPLETT GELÖSCHT!) [$SUGGESTED_INTERNAL]: " CHOSEN_DISK
-        CHOSEN_DISK="${CHOSEN_DISK:-$SUGGESTED_INTERNAL}"
-    else
-        read -p "ZIEL-Festplatte eingeben: " CHOSEN_DISK
-    fi
+    echo "📥 --- MODUS: PARTITION WIEDERHERSTELLEN ---"
+    read -p "ZIEL-Partition eingeben (WIRD KOMPLETT GELÖSCHT!) (z.B. sda1): " CHOSEN_PART
 fi
 
-CHOSEN_DISK=$(echo "$CHOSEN_DISK" | sed 's|^/dev/||')
+CHOSEN_PART=$(echo "$CHOSEN_PART" | sed 's|^/dev/||')
 
-if [ ! -b "/dev/$CHOSEN_DISK" ]; then
-    echo "❌ Fehler: /dev/$CHOSEN_DISK existiert nicht!"
+if [ ! -b "/dev/$CHOSEN_PART" ]; then
+    echo "❌ Fehler: /dev/$CHOSEN_PART existiert nicht!"
     exit 1
 fi
 
-if [ "$CHOSEN_DISK" = "$BACKUP_DISK_BASE" ]; then
-    echo "❌ FATALER FEHLER: Du versucht, die Backup-Platte selbst zu wählen!"
+# 🔥 PARTITION VS DISK CHECK (Hier umgedreht für den neuen Modus!)
+DEV_TYPE=$(lsblk -nod TYPE "/dev/$CHOSEN_PART" 2>/dev/null)
+if [ "$DEV_TYPE" != "part" ]; then
+    echo "❌ FEHLER: /dev/$CHOSEN_PART ist keine Partition ($DEV_TYPE)."
+    echo "   Dieses Skript ist im Partitions-Modus. Bitte gib eine Partition an (z.B. sda1 statt sda)!"
     exit 1
 fi
 
-if is_system_critical "$CHOSEN_DISK"; then
+if [ "$CHOSEN_PART" = "$BACKUP_PART" ]; then
+    echo "❌ FATALER FEHLER: Du versuchst, die Backup-Partition selbst zu wählen!"
+    exit 1
+fi
+
+if is_system_critical "$CHOSEN_PART"; then
     if [ "$MODE" = "restore" ]; then
-        echo "❌ ABSOLUTES VERBOT: Das aktive System kann nicht überschrieben werden!"
+        echo "❌ ABSOLUTES VERBOT: Die aktive Systempartition kann nicht im laufenden Betrieb überschrieben werden!"
         exit 1
     else
-        echo "⚠️  WARNUNG: Quellplatte enthält aktive System-Mounts."
+        echo "⚠️  WARNUNG: Diese Partition enthält aktive System-Mounts."
         read -p "Trotzdem fortfahren? (j/n): " LIVE_CONFIRM
         [[ "$LIVE_CONFIRM" =~ ^[Jj]$ ]] || { echo "❌ Abgebrochen"; exit 1; }
     fi
@@ -200,7 +204,7 @@ fi
 
 if [ "$MODE" = "restore" ]; then
     echo -e "\n🔥 !!! WARNUNG !!! 🔥"
-    echo "ALLE DATEN AUF /dev/$CHOSEN_DISK WERDEN UNWIDERRUFLICH GELÖSCHT!"
+    echo "ALLE DATEN AUF /dev/$CHOSEN_PART WERDEN UNWIDERRUFLICH GELÖSCHT!"
     read -p "Sicher? Tippe 'JA-ICH-WILL' zum Bestätigen: " FINAL_CONFIRM
     if [ "$FINAL_CONFIRM" != "JA-ICH-WILL" ]; then
         echo "❌ Abgebrochen."
@@ -222,19 +226,19 @@ clear_screen
 echo "============================================================"
 echo "                   ZUSAMMENFASSUNG                          "
 echo "============================================================"
-echo -e " Modus:         \033[1;33m${MODE^^}\033[0m"
+echo -e " Modus:         \033[1;33m${MODE^^} PARTITION\033[0m"
 echo -e " Speicher-Part: /dev/$BACKUP_PART (auf $DEFAULT_BACKUP_DIR)"
 echo -e " Backup-Name:   $BACKUP_NAME"
 if [ "$MODE" = "backup" ]; then
-    echo -e " Quelle:        /dev/$CHOSEN_DISK"
+    echo -e " Quelle:        /dev/$CHOSEN_PART"
 else
-    echo -e " Ziel (Löschung): /dev/$CHOSEN_DISK"
+    echo -e " Ziel (Löschung): /dev/$CHOSEN_PART"
 fi
 echo "============================================================"
 read -p "Drücke [ENTER] um Clonezilla endgültig zu starten..."
 
 if [ "$MODE" = "backup" ]; then
-    echo "$PASSWORD" | ocs-sr -q2 -j2 -z1p -i "$DEFAULT_SPLIT_SIZE" -sfsck -senc -p choose savedisk "$BACKUP_NAME" "$CHOSEN_DISK"
+    echo "$PASSWORD" | ocs-sr -q2 -j2 -z1p -i "$DEFAULT_SPLIT_SIZE" -sfsck -senc -p choose saveparts "$BACKUP_NAME" "$CHOSEN_PART"
 else
-    echo "$PASSWORD" | ocs-sr -g auto -e1 auto -e2 -c -r -j2 -senc -p choose restoredisk "$BACKUP_NAME" "$CHOSEN_DISK"
+    echo "$PASSWORD" | ocs-sr -g auto -e1 auto -e2 -c -r -j2 -senc -p choose restoreparts "$BACKUP_NAME" "$CHOSEN_PART"
 fi
