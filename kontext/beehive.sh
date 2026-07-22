@@ -2,6 +2,8 @@
 #
 # BeeHive – TreeSize‑Optik mit Bienengruss
 # Nutzung: ./beehive.sh [Pfad] [Tiefe] [--gui|--terminal]
+#
+
 # ---------- Sicherheitsoptionen ----------
 # -e : bricht bei Fehlern ab
 # -u : nicht gesetzte Variablen führen zu Fehler
