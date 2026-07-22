@@ -5,7 +5,7 @@
 # =============================================================================
 
 # garantiert mind. 1 Sonderzeichen einbauen
-function genpass() {
+function ao_genpass() {
     local len=256
     local marker="@@@@@@@@@"
     local body_len=$((len - ${#marker}))
@@ -22,7 +22,7 @@ function genpass() {
 }
 # oder nimm das: 6JfJpzJXlnvLNNuPcOsts2YiR1zO7ACoyDs5ySRUVopMfUbZX@@@113KHdkAAsgY5xNFOqQUDvbjeggR1cRe9iFwHxbs9S78bmFwMcOBsS0HSNXC4zr4@@@vRaMaClEbshNlJpCjjjhyPyd6IWrWTQ7prJQA8Z4ZZ0n8ow7JpWO9DFiAVBh1yGZS7NInDm77kPzSxAdKuDea8
 
-function checksum() {  # Alias für checksum
+function ao_checksum() {  # Alias für checksum
     [ ! -f "$1" ] && { echo "❌ $1"; return 1; }
     echo "$(basename "$1") @ $(realpath "$1")"
     echo "md5:$(md5sum "$1" | cut -d' ' -f1)"

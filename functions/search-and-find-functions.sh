@@ -5,7 +5,7 @@
 #nsearch "API_KEY" /etc      # search a specific directory
 #sudo nsearch "password"     # search with root privileges (needed for protected files)
 
-function find_in_file() {
+function ao_find_in_file() {
     local pattern="$1"
     local dir="${2:-/}"
 
@@ -19,7 +19,7 @@ function find_in_file() {
 #nfind "config"               # uses locate if available, else falls back to find
 #nfind "backup" /home         # search a specific directory (forces find, skips locate)
 
-function find_files() {
+function ao_find_files() {
     local pattern="$1"
     local dir="${2:-/}"
 

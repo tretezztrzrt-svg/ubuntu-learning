@@ -33,7 +33,7 @@ function open_files() {
 }
 
 # Quick all-in-one check
-function syscheck() {
+function ao_syscheck() {
     echo "=== $(date '+%H:%M:%S') ==="
     echo ""
     echo "CPU top:"
